@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+<!--
+<item android:state_pressed="true">     ：押された場合
+    <shape android:shape="rectangle">   ：描く図形を指定（ rectangle : 四角形／oval : 楕円／line : 直線／ring : 円形 ）
+        <solid android:color="#F08000"></solid> ：背景色(色を単色で指定)
+        <stroke android:color="#F08000" android:width="2dp"/>　：枠線の形状を指定
+    </shape>
+</item>
+
+※） <タグ名>～</タグ名> と <タグ名>～/> の違いがよくわからない。（2017/07/05）
+　　ＨＰのサンプルを適用してもこの違いで動かないものが多い。ＳＤＫのバージョンとかも関係しているのだろうか？
+
+    <item android:state_selected="true"
+        android:state_pressed="false" >
+        <shape android:shape="rectangle">
+            <solid android:color="#ccF08000" />
+            <stroke android:color="#ccF08000" android:width="2dp"/>
+        </shape>
+    </item>
+-->
+
+    <item android:state_pressed="true" >
+        <shape android:shape="rectangle">
+            <solid android:color="#ccF08000" />
+        </shape>
+    </item>
+    <item android:state_selected="true" >
+        <shape android:shape="rectangle">
+            <solid android:color="#ccF08000" />
+        </shape>
+    </item>
+
+    <!--
+            <item android:state_selected="false"
+                   android:state_focused="true"
+                   android:state_pressed="false" >
+                <shape android:shape="rectangle">
+                    <solid android:color="#44F08000" />
+                    <stroke android:color="#ffF08000" android:width="2dp"/>
+                </shape>
+            </item>
+        -->
+</selector>

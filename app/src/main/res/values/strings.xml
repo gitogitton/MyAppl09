@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">MyAppl09</string>
+    <string name="textviewCap">パスを表示する</string>
+    <string name="No_Data">データがありません</string>
+    <string name="List_Name">ファイル名一覧</string>
+    <string name="menuItem_copy">コピー</string>
+    <string name="menuItem_paste">貼付</string>
+    <string name="menuItem_delete">削除</string>
+    <string name="menuItem_upRoot">／</string>
+    <string name="menuItem_upFolder">．．／</string>
+    <string name="dialog_title">確認ダイアログ</string>
+    <string name="dialog_message">処理を「継続」すると選択中の項目が解除されます。\nよろしいですか？</string>
+    <string name="dialog_ok">継続</string>
+    <string name="dialog_cancel">中止</string>
+    <string name="dialog_delay">保留</string>
+</resources>
