@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     final int RESULT_CANCEL = 0;
 
     String copiedFile;      // コピー元ファイル（パス含む）
-    StringBuilder copiedFileBld;
+    StringBuilder copiedFileBld = null;
 
     CustomAdapter aAdapter;         // ListView のアダプター
     int resultAlertDialog = RESULT_OK;  // 確認ダイアログのＯＫ／ＣＡＮＣＥＬボタンの結果を格納
@@ -335,6 +335,9 @@ public class MainActivity extends AppCompatActivity {
                         Log.d( TAG_SD, "copiedFile : " + copiedFile );
 
 // StringBuilder型で処理した場合
+                        if ( null == copiedFileBld ) {
+                            copiedFileBld = new StringBuilder();
+                        }
                         copiedFileBld.append( savedData.get( cnt ).getAbsolutePath() );
                         copiedFileBld.append( "/" );
                         copiedFileBld.append( savedData.get( cnt ).getText() );
