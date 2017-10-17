@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     final int RESULT_CANCEL = 0;
 
     String copiedFile;      // コピー元ファイル（パス含む）
+    StringBuilder copiedFileBld;
 
     CustomAdapter aAdapter;         // ListView のアダプター
     int resultAlertDialog = RESULT_OK;  // 確認ダイアログのＯＫ／ＣＡＮＣＥＬボタンの結果を格納
@@ -316,13 +317,33 @@ public class MainActivity extends AppCompatActivity {
                 if (!savedData.isEmpty()) {
                     int maxNum = savedData.size();
                     for ( int cnt=0; cnt<maxNum; cnt++ ) {
-                        // コビー元ファイルを編集
-                        StringBuilder strBld = new StringBuilder();
-                        strBld.append( savedData.get( cnt ).getAbsolutePath() );
-                        strBld.append( "/" );
-                        strBld.append( savedData.get( cnt ).getText() );
-                        // コピー元ファイルを保存しておく。
-                        copiedFile = strBld.toString();
+//
+//                         //コビー元ファイルを編集
+//                        StringBuilder strBld = new StringBuilder();
+//                        strBld.append( savedData.get( cnt ).getAbsolutePath() );
+//                        strBld.append( "/" );
+//                        strBld.append( savedData.get( cnt ).getText() );
+//                        // コピー元ファイルを保存しておく。
+//                        copiedFile = strBld.toString();
+
+// String型で処理した場合
+                        copiedFile += savedData.get( cnt ).getAbsolutePath();
+                        copiedFile += "/";
+                        copiedFile += savedData.get( cnt ).getText();
+
+                        // 内容確認
+                        Log.d( TAG_SD, "copiedFile : " + copiedFile );
+
+// StringBuilder型で処理した場合
+                        copiedFileBld.append( savedData.get( cnt ).getAbsolutePath() );
+                        copiedFileBld.append( "/" );
+                        copiedFileBld.append( savedData.get( cnt ).getText() );
+
+                        // 内容確認
+                        Log.d( TAG_SD, "copiedFileBld : " + copiedFileBld );
+
+
+
                     }
                 }
                 break;
