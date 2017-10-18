@@ -333,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
 //                        copiedFile = strBld.toString();
 
 // String型で処理した場合
-                        copiedFile += savedData.get( cnt ).getAbsolutePath();
+                        copiedFile = savedData.get( cnt ).getAbsolutePath();
 //                        copiedFile += "/";
                         copiedFile += savedData.get( cnt ).getText();
 
@@ -376,7 +376,9 @@ public class MainActivity extends AppCompatActivity {
                             if ( null!=file) {
                                 try {
                                     file.close();
-                                    Log.d( TAG_SD, "close copied file." );
+//                                    Log.d( TAG_SD, "close copied file." );
+                                    Toast.makeText( MainActivity.this, "ファイル [" + copiedFile + "] をコピーしました。", Toast.LENGTH_LONG ).show();
+
                                 }
                                 catch (IOException e){
                                     e.printStackTrace();
