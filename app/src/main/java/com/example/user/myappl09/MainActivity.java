@@ -33,13 +33,16 @@ public class MainActivity extends AppCompatActivity {
     final int RESULT_OK = -1;
     final int RESULT_CANCEL = 0;
 
-    String copiedFile;      // コピー元ファイル（パス含む）
-    StringBuilder copiedFileBld = null;
-    StringBuffer copiedFileBuff = null;
+    // コピー元ファイル（パス含む）
+    String copiedFile[];
+    StringBuilder copiedFileBld[] = null;
+    StringBuffer copiedFileBuff[] = null;
+    // コピー元ファイルの内容
+    BufferedInputStream readData = null;
 
-    CustomAdapter aAdapter;         // ListView のアダプター
+    CustomAdapter aAdapter;                 // ListView のアダプター
     int resultAlertDialog = RESULT_OK;  // 確認ダイアログのＯＫ／ＣＡＮＣＥＬボタンの結果を格納
-    TextView emptyTextView;             //ListViewに表示する内容が０件の場合に表示するTextView
+    TextView emptyTextView;                //ListViewに表示する内容が０件の場合に表示するTextView
     ArrayList<LineData> savedData = new ArrayList<>();   //選択時（複数可能）のデータを保存するバッファ
 
     // ============================================================================================================
@@ -323,67 +326,39 @@ public class MainActivity extends AppCompatActivity {
                 if (!savedData.isEmpty()) {
                     int maxNum = savedData.size();
                     for ( int cnt=0; cnt<maxNum; cnt++ ) {
-//
-//                         //コビー元ファイルを編集
-//                        StringBuilder strBld = new StringBuilder();
-//                        strBld.append( savedData.get( cnt ).getAbsolutePath() );
-//                        strBld.append( "/" );
-//                        strBld.append( savedData.get( cnt ).getText() );
-//                        // コピー元ファイルを保存しておく。
-//                        copiedFile = strBld.toString();
-
 // String型で処理した場合
-                        copiedFile = savedData.get( cnt ).getAbsolutePath();
+                        copiedFile[cnt] = savedData.get( cnt ).getAbsolutePath();
 //                        copiedFile += "/";
-                        copiedFile += savedData.get( cnt ).getText();
+                        copiedFile[cnt] += savedData.get( cnt ).getText();
 
                         // 内容確認
-                        Log.d( TAG_SD, "copiedFile : " + copiedFile );
+                        Log.d( TAG_SD, "copiedFile : " + copiedFile[cnt] );
 
 // StringBuilder型で処理した場合
-                        if ( null == copiedFileBld ) {
-                            copiedFileBld = new StringBuilder();
+                        if ( null == copiedFileBld[cnt] ) {
+                            copiedFileBld[cnt] = new StringBuilder();
                         }
-                        copiedFileBld.append( savedData.get( cnt ).getAbsolutePath() );
+                        copiedFileBld[cnt].append( savedData.get( cnt ).getAbsolutePath() );
 //                        copiedFileBld.append( "/" );
-                        copiedFileBld.append( savedData.get( cnt ).getText() );
+                        copiedFileBld[cnt].append( savedData.get( cnt ).getText() );
 
                         // 内容確認
-                        Log.d( TAG_SD, "copiedFileBld : " + copiedFileBld );
+                        Log.d( TAG_SD, "copiedFileBld : " + copiedFileBld[cnt] );
 
 // StringBuffer型で処理した場合
-                        if ( null == copiedFileBuff ) {
-                            copiedFileBuff = new StringBuffer();
+                        if ( null == copiedFileBuff[cnt] ) {
+                            copiedFileBuff[cnt] = new StringBuffer();
                         }
-                        copiedFileBuff.append( savedData.get( cnt ).getAbsolutePath() );
+                        copiedFileBuff[cnt].append( savedData.get( cnt ).getAbsolutePath() );
 //                        copiedFileBuff.append( "/" );
-                        copiedFileBuff.append( savedData.get( cnt ).getText() );
+                        copiedFileBuff[cnt].append( savedData.get( cnt ).getText() );
 
                         // 内容確認
-                        Log.d( TAG_SD, "copiedFileBuff : " + copiedFileBuff );
+                        Log.d( TAG_SD, "copiedFileBuff : " + copiedFileBuff[cnt] );
 
-                        // ファイルの内容を読み込んで保存
-                        FileInputStream file = null;
-                        try {
-                            file = new FileInputStream( copiedFile );
-                            BufferedInputStream readData = new BufferedInputStream( file );
-                        }
-                        catch (IOException e) { // FileNoExceptin はサブクラスになってるようなのでこれだけ指定する
-                            e.printStackTrace();
-                        }
-                        finally {
-                            // ファイルが開いているなら必ず閉じる！！
-                            if ( null!=file) {
-                                try {
-                                    file.close();
-//                                    Log.d( TAG_SD, "close copied file." );
-                                    Toast.makeText( MainActivity.this, "ファイル [" + copiedFile + "] をコピーしました。", Toast.LENGTH_LONG ).show();
-                                }
-                                catch (IOException e){
-                                    e.printStackTrace();
-                                }
-                            } // if ( null!=file)
-                        }
+                        //
+                        // ファイルの読み込みはペースト側に持っていく。（10/18）
+                        //
 
                     } //for ( int cnt=0 )
                 } //if (!savedData.isEmpty())
@@ -391,8 +366,55 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.action_paste :    // ペースト
-                break;
+            {
+                if (!savedData.isEmpty()) {
 
+                    int maxNum = savedData.size();
+                    for (int cnt = 0; cnt < maxNum; cnt++) {
+
+                        // コピー元ファイルが同じディレクトリーならば次を処理する。
+                        String currentPath = savedData.get(cnt).getAbsolutePath();
+                        if ( currentPath.equals( System.getProperty("user.dir") )  ) {
+                            Toast.makeText(MainActivity.this, "ファイル [" + savedData.get(cnt).getText() + "] は同じディレクトリーなのでコピーしません。", Toast.LENGTH_LONG).show();
+                            continue;
+                        }
+
+
+
+                        // ファイルの内容を読み込んで保存
+                        FileInputStream file = null;
+                        try {
+                            file = new FileInputStream(copiedFile[cnt]);
+                            readData = new BufferedInputStream(file);
+                        } catch (IOException e) { // FileNoExceptin はサブクラスになってるようなのでこれだけ指定する
+                            e.printStackTrace();
+                        } finally {
+                            // ファイルが開いているなら必ず閉じる！！
+                            if (null != file) {
+                                try {
+                                    file.close();
+//                                    Log.d( TAG_SD, "close copied file." );
+                                    Toast.makeText(MainActivity.this, "ファイル [" + copiedFile[cnt] + "] をコピーしました。", Toast.LENGTH_LONG).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } // if ( null!=file)
+                        }
+                    } // for (int cnt = 0)
+
+//
+// 直近のファイルを覚えておく処理を追加するのを忘れない。
+//
+
+
+                    Toast.makeText(MainActivity.this, "ファイルを貼り付けました。", Toast.LENGTH_LONG).show();
+
+                } // if (!savedData.isEmpty())
+                else {
+                    Toast.makeText(MainActivity.this, "ファイルが選択されていません。", Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
             case R.id.action_delete :   // 削除
                 break;
 
