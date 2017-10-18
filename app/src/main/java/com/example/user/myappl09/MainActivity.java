@@ -376,6 +376,7 @@ public class MainActivity extends AppCompatActivity {
                             if ( null!=file) {
                                 try {
                                     file.close();
+                                    Log.d( TAG_SD, "close copied file." );
                                 }
                                 catch (IOException e){
                                     e.printStackTrace();
