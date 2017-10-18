@@ -378,7 +378,6 @@ public class MainActivity extends AppCompatActivity {
                                     file.close();
 //                                    Log.d( TAG_SD, "close copied file." );
                                     Toast.makeText( MainActivity.this, "ファイル [" + copiedFile + "] をコピーしました。", Toast.LENGTH_LONG ).show();
-
                                 }
                                 catch (IOException e){
                                     e.printStackTrace();
