@@ -18,7 +18,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -30,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     String copiedFile;      // コピー元ファイル（パス含む）
     StringBuilder copiedFileBld = null;
+    StringBuffer copiedFileBuff = null;
 
     CustomAdapter aAdapter;         // ListView のアダプター
     int resultAlertDialog = RESULT_OK;  // 確認ダイアログのＯＫ／ＣＡＮＣＥＬボタンの結果を格納
@@ -328,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
 
 // String型で処理した場合
                         copiedFile += savedData.get( cnt ).getAbsolutePath();
-                        copiedFile += "/";
+//                        copiedFile += "/";
                         copiedFile += savedData.get( cnt ).getText();
 
                         // 内容確認
@@ -339,16 +345,47 @@ public class MainActivity extends AppCompatActivity {
                             copiedFileBld = new StringBuilder();
                         }
                         copiedFileBld.append( savedData.get( cnt ).getAbsolutePath() );
-                        copiedFileBld.append( "/" );
+//                        copiedFileBld.append( "/" );
                         copiedFileBld.append( savedData.get( cnt ).getText() );
 
                         // 内容確認
                         Log.d( TAG_SD, "copiedFileBld : " + copiedFileBld );
 
+// StringBuffer型で処理した場合
+                        if ( null == copiedFileBuff ) {
+                            copiedFileBuff = new StringBuffer();
+                        }
+                        copiedFileBuff.append( savedData.get( cnt ).getAbsolutePath() );
+//                        copiedFileBuff.append( "/" );
+                        copiedFileBuff.append( savedData.get( cnt ).getText() );
 
+                        // 内容確認
+                        Log.d( TAG_SD, "copiedFileBuff : " + copiedFileBuff );
 
-                    }
-                }
+                        // ファイルの内容を読み込んで保存
+                        FileInputStream file = null;
+                        try {
+                            file = new FileInputStream( copiedFile );
+                            BufferedInputStream readData = new BufferedInputStream( file );
+                        }
+                        catch (IOException e) { // FileNoExceptin はサブクラスになってるようなのでこれだけ指定する
+                            e.printStackTrace();
+                        }
+                        finally {
+                            // ファイルが開いているなら必ず閉じる！！
+                            if ( null!=file) {
+                                try {
+                                    file.close();
+                                }
+                                catch (IOException e){
+                                    e.printStackTrace();
+                                }
+                            } // if ( null!=file)
+                        }
+
+                    } //for ( int cnt=0 )
+                } //if (!savedData.isEmpty())
+
                 break;
             }
             case R.id.action_paste :    // ペースト
