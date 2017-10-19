@@ -21,8 +21,6 @@ import android.widget.Toast;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -331,6 +329,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "指定できるファイルの数を超えているので処理を中断します。\nごめんなさい。", Toast.LENGTH_LONG).show();
                         break;
                     }
+                    // コピー処理を行う。
                     for ( int cnt=0; cnt<maxNum; cnt++ ) {
 // String型で処理した場合
                         copiedFile[cnt] = savedData.get( cnt ).getAbsolutePath();
@@ -341,6 +340,8 @@ public class MainActivity extends AppCompatActivity {
                         Log.d( TAG_SD, "copiedFile : " + copiedFile[cnt] );
 
 // StringBuilder型で文字列連結処理した場合
+// 初期化　例１                        copiedFileBld.delete( 0, copiedFileBld.length()-1 );
+                        copiedFileBld.setLength( 0 );   // 初期化　例２
                         copiedFileBld.append( savedData.get( cnt ).getAbsolutePath() );
 //                        copiedFileBld.append( "/" );
                         copiedFileBld.append( savedData.get( cnt ).getText() );
@@ -350,6 +351,8 @@ public class MainActivity extends AppCompatActivity {
                         Log.d( TAG_SD, "copiedFileBld : " + copiedFile[cnt] );
 
 // StringBuffer型で文字列連結処理した場合
+// 初期化　例１                        copiedFileBuff.setLength( 0 );
+                        copiedFileBuff.delete(0, copiedFileBuff.length()-1);    // 初期化　例２
                         copiedFileBuff.append( savedData.get( cnt ).getAbsolutePath() );
 //                        copiedFileBuff.append( "/" );
                         copiedFileBuff.append( savedData.get( cnt ).getText() );
