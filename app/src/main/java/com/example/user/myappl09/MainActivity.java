@@ -34,9 +34,10 @@ public class MainActivity extends AppCompatActivity {
     final int RESULT_CANCEL = 0;
 
     // コピー元ファイル（パス含む）
-    String copiedFile[];
-    StringBuilder copiedFileBld[] = null;
-    StringBuffer copiedFileBuff[] = null;
+    final int FILE_NUM = 64;
+    String[] copiedFile = new String[FILE_NUM];    // 本当は可変長で処理したいけどとりあえず指定
+    StringBuilder copiedFileBld = new StringBuilder();
+    StringBuffer copiedFileBuff = new StringBuffer();
     // コピー元ファイルの内容
     BufferedInputStream readData = null;
 
@@ -325,6 +326,11 @@ public class MainActivity extends AppCompatActivity {
             {
                 if (!savedData.isEmpty()) {
                     int maxNum = savedData.size();
+                    if ( maxNum > FILE_NUM ) {
+                        // copied file は配列の数を指定しているのでそれを超えている場合は処理を中断する。
+                        Toast.makeText(MainActivity.this, "指定できるファイルの数を超えているので処理を中断します。\nごめんなさい。", Toast.LENGTH_LONG).show();
+                        break;
+                    }
                     for ( int cnt=0; cnt<maxNum; cnt++ ) {
 // String型で処理した場合
                         copiedFile[cnt] = savedData.get( cnt ).getAbsolutePath();
@@ -334,27 +340,23 @@ public class MainActivity extends AppCompatActivity {
                         // 内容確認
                         Log.d( TAG_SD, "copiedFile : " + copiedFile[cnt] );
 
-// StringBuilder型で処理した場合
-                        if ( null == copiedFileBld[cnt] ) {
-                            copiedFileBld[cnt] = new StringBuilder();
-                        }
-                        copiedFileBld[cnt].append( savedData.get( cnt ).getAbsolutePath() );
+// StringBuilder型で文字列連結処理した場合
+                        copiedFileBld.append( savedData.get( cnt ).getAbsolutePath() );
 //                        copiedFileBld.append( "/" );
-                        copiedFileBld[cnt].append( savedData.get( cnt ).getText() );
+                        copiedFileBld.append( savedData.get( cnt ).getText() );
+                        copiedFile[cnt] = copiedFileBld.toString();
 
                         // 内容確認
-                        Log.d( TAG_SD, "copiedFileBld : " + copiedFileBld[cnt] );
+                        Log.d( TAG_SD, "copiedFileBld : " + copiedFile[cnt] );
 
-// StringBuffer型で処理した場合
-                        if ( null == copiedFileBuff[cnt] ) {
-                            copiedFileBuff[cnt] = new StringBuffer();
-                        }
-                        copiedFileBuff[cnt].append( savedData.get( cnt ).getAbsolutePath() );
+// StringBuffer型で文字列連結処理した場合
+                        copiedFileBuff.append( savedData.get( cnt ).getAbsolutePath() );
 //                        copiedFileBuff.append( "/" );
-                        copiedFileBuff[cnt].append( savedData.get( cnt ).getText() );
+                        copiedFileBuff.append( savedData.get( cnt ).getText() );
+                        copiedFile[cnt] = copiedFileBuff.toString();
 
                         // 内容確認
-                        Log.d( TAG_SD, "copiedFileBuff : " + copiedFileBuff[cnt] );
+                        Log.d( TAG_SD, "copiedFileBuff : " + copiedFile[cnt] );
 
                         //
                         // ファイルの読み込みはペースト側に持っていく。（10/18）
