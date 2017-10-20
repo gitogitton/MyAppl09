@@ -34,8 +34,8 @@ public class MainActivity extends AppCompatActivity {
     // コピー元ファイル（パス含む）
     final int FILE_NUM = 64;
     String[] copiedFile = new String[FILE_NUM];    // 本当は可変長で処理したいけどとりあえず指定
-    StringBuilder copiedFileBld = new StringBuilder();
-    StringBuffer copiedFileBuff = new StringBuffer();
+    StringBuilder strBld = new StringBuilder();
+    StringBuffer strBuff = new StringBuffer();
     // コピー元ファイルの内容
     BufferedInputStream readData = null;
 
@@ -120,11 +120,15 @@ public class MainActivity extends AppCompatActivity {
                 //Itemがフォルダの時そのフォルダの中身をList（dir）する。
                 //
                 if ( item.getFolderOrFile() ) {
-                    // 選択中データがあれば「選択中はフォルダ移動は出来ない」とユーザに告げる。一括で選択中を解除する事もできる。
-                    if ( !savedData.isEmpty() ) {
-                        showAlertDialog();
-                        return;
-                    }
+
+// コピー先は違うディレクトリーになるので邪魔。
+//
+//                    // 選択中データがあれば「選択中はフォルダ移動は出来ない」とユーザに告げる。一括で選択中を解除する事もできる。
+//                    if ( !savedData.isEmpty() ) {
+//                        showAlertDialog();
+//                        return;
+//                    }
+
                     // ルートディレクトリー直下なら「／」をつけない。ついてるんで、２つになっちゃう。最初にしっかり考えないから・・・。今はそういう時期じゃないの、勉強優先。
                     if ( item.getAbsolutePath().equals( System.getProperty( "file.separator" ) ) ) {
 
@@ -341,25 +345,26 @@ public class MainActivity extends AppCompatActivity {
 
 // StringBuilder型で文字列連結処理した場合
 // 初期化　例１                        copiedFileBld.delete( 0, copiedFileBld.length()-1 );
-                        copiedFileBld.setLength( 0 );   // 初期化　例２
-                        copiedFileBld.append( savedData.get( cnt ).getAbsolutePath() );
-//                        copiedFileBld.append( "/" );
-                        copiedFileBld.append( savedData.get( cnt ).getText() );
-                        copiedFile[cnt] = copiedFileBld.toString();
+                        strBld.setLength( 0 );   // 初期化　例２
+                        strBld.append( savedData.get( cnt ).getAbsolutePath() );
+                        strBld.append( savedData.get( cnt ).getText() );
+                        copiedFile[cnt] = strBld.toString();
 
                         // 内容確認
-                        Log.d( TAG_SD, "copiedFileBld : " + copiedFile[cnt] );
+                        Log.d( TAG_SD, "strBld : " + copiedFile[cnt] );
 
 // StringBuffer型で文字列連結処理した場合
 // 初期化　例１                        copiedFileBuff.setLength( 0 );
-                        copiedFileBuff.delete(0, copiedFileBuff.length()-1);    // 初期化　例２
-                        copiedFileBuff.append( savedData.get( cnt ).getAbsolutePath() );
+                        if ( 0 < strBuff.length() ) {
+                            strBuff.delete(0, strBuff.length()-1);    // 初期化　例２
+                        }
+                        strBuff.append( savedData.get( cnt ).getAbsolutePath() );
 //                        copiedFileBuff.append( "/" );
-                        copiedFileBuff.append( savedData.get( cnt ).getText() );
-                        copiedFile[cnt] = copiedFileBuff.toString();
+                        strBuff.append( savedData.get( cnt ).getText() );
+                        copiedFile[cnt] = strBuff.toString();
 
                         // 内容確認
-                        Log.d( TAG_SD, "copiedFileBuff : " + copiedFile[cnt] );
+                        Log.d( TAG_SD, "strBuff : " + copiedFile[cnt] );
 
                         //
                         // ファイルの読み込みはペースト側に持っていく。（10/18）
@@ -384,13 +389,23 @@ public class MainActivity extends AppCompatActivity {
                             continue;
                         }
 
-
-
-                        // ファイルの内容を読み込んで保存
+                        //=================================================================================
+                        // ファイルの内容を読み込んで保存し、その内容を指定のディレクトリに書き込む。
+                        // (貼り付け)
+                        //=================================================================================
                         FileInputStream file = null;
                         try {
+                            // コピー元ファイルを読み込む。
                             file = new FileInputStream(copiedFile[cnt]);
                             readData = new BufferedInputStream(file);
+                            // 指定のディレクトりに同じファイル名で書き込みを行う。
+                            strBld.setLength( 0 );      // 初期化
+                            strBld.append( System.getProperty("user.dir") );    // コピー先となるディレクトリーをセット
+                            int pos = copiedFile[cnt].lastIndexOf( "/" );
+                            String fileMame = copiedFile[cnt].substring( pos+1, copiedFile[cnt].length() );
+                            strBld.append( fileMame );      // ファイル名を追加
+
+
                         } catch (IOException e) { // FileNoExceptin はサブクラスになってるようなのでこれだけ指定する
                             e.printStackTrace();
                         } finally {
@@ -398,8 +413,7 @@ public class MainActivity extends AppCompatActivity {
                             if (null != file) {
                                 try {
                                     file.close();
-//                                    Log.d( TAG_SD, "close copied file." );
-                                    Toast.makeText(MainActivity.this, "ファイル [" + copiedFile[cnt] + "] をコピーしました。", Toast.LENGTH_LONG).show();
+                                    Log.d(TAG_SD, "ファイル [" + copiedFile[cnt] + "] をコピーしました。");
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -411,8 +425,8 @@ public class MainActivity extends AppCompatActivity {
 // 直近のファイルを覚えておく処理を追加するのを忘れない。
 //
 
+                    Toast.makeText(MainActivity.this, "ファイル貼り付けを終了しました。", Toast.LENGTH_LONG).show();
 
-                    Toast.makeText(MainActivity.this, "ファイルを貼り付けました。", Toast.LENGTH_LONG).show();
 
                 } // if (!savedData.isEmpty())
                 else {
