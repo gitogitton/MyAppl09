@@ -321,8 +321,9 @@ public class MainActivity extends AppCompatActivity {
 
         switch( item.getItemId() ) {
 
-            case android.R.id.home:     //呼び元に戻る。ここの場合、ずっとMainActivityなのでfinish()をCallするとアプリ画面が閉じてしまう・・・のだった・・・。
+            case android.R.id.home:     // 戻るボタン   // ここの場合、ずっとMainActivityなのでfinish()をCallするとアプリ画面が閉じてしまう・・・のだった・・・。
             {
+                //confirmFinishDialog();
                 finish();
                 return true;
             }
@@ -514,7 +515,56 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     // ============================================================================================================
-    // AlertDialog を表示し、選択状態を解除するのか否かを確認する。
+    // アプリを終了するか否かを確認する alertDialog を出力する。
+    // ============================================================================================================
+    private void confirmFinishDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder( MainActivity.this );
+        builder.setTitle( "Confirm" );  // ダイアログのタイトル設定
+        builder.setMessage( "アプリを終了しますか？" );    // ダイアログに表示するメッセージを設定
+        builder.setCancelable( false );      // backキーなどを押して、あるいは、その他操作でキャンセルされないようにする。ユーザの回答入力を待つ。
+
+        // OKボタン押下時のリスナー登録
+        builder.setPositiveButton( "いいです。", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+// debug                        Toast.makeText( MainActivity.this, "confirmFinishDialog.onClick() of Positive button", Toast.LENGTH_SHORT ).show();
+                        resultAlertDialog = RESULT_OK;  // 確認ダイアログのＯＫを格納
+                    } // onClick()
+                } // DialogInterface.OnClickListener()
+        ); // setPositiveButton()
+
+        // CANCELボタン押下時のリスナー登録
+        builder.setNegativeButton( "ダメです。", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText( MainActivity.this, "confirmFinishDialog.onClick() of Negative button", Toast.LENGTH_SHORT ).show();
+                        resultAlertDialog = RESULT_CANCEL;  // 確認ダイアログのＣＡＮＣＥＬを格納
+                    } // onClick()
+                } // DialogInterface.OnClickListener()
+        ); // setNegativeButton()
+
+        // cancel()された時のリスナー
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                Log.d( "alertDialog", "setOnDismissListener.onCancel() runs." );
+            } // onCancel()
+        }); // setOnCancelListener()
+
+        // ダイアログが閉じるが実行された時のリスナー
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                Log.d( "alertDialog", "setOnDismissListener.onDismiss() runs." );
+            } // onDismiss()
+        }); // setOnDismissListener()
+
+        AlertDialog alertDlg = builder.create();
+        alertDlg.show();
+    }
+
+    // ============================================================================================================
+    // 選択状態を解除するのか否かを確認する alertDialog を出力する。
     // ============================================================================================================
     private void showAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder( MainActivity.this );
