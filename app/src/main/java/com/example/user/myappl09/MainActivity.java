@@ -21,6 +21,7 @@ import android.widget.Toast;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -383,8 +384,10 @@ public class MainActivity extends AppCompatActivity {
                     for (int cnt = 0; cnt < maxNum; cnt++) {
 
                         // コピー元ファイルが同じディレクトリーならば次を処理する。
-                        String currentPath = savedData.get(cnt).getAbsolutePath();
-                        if ( currentPath.equals( System.getProperty("user.dir") )  ) {
+                        TextView dispPath = (TextView)findViewById( R.id.textView4 );
+                        String destPath = dispPath.getText().toString();
+                        String srcPath = savedData.get(cnt).getAbsolutePath();
+                        if ( srcPath.equals( destPath )  ) {
                             Toast.makeText(MainActivity.this, "ファイル [" + savedData.get(cnt).getText() + "] は同じディレクトリーなのでコピーしません。", Toast.LENGTH_LONG).show();
                             continue;
                         }
@@ -393,32 +396,49 @@ public class MainActivity extends AppCompatActivity {
                         // ファイルの内容を読み込んで保存し、その内容を指定のディレクトリに書き込む。
                         // (貼り付け)
                         //=================================================================================
-                        FileInputStream file = null;
+                        FileInputStream srcFile = null;
+                        FileOutputStream destFile = null;
                         try {
                             // コピー元ファイルを読み込む。
-                            file = new FileInputStream(copiedFile[cnt]);
-                            readData = new BufferedInputStream(file);
-                            // 指定のディレクトりに同じファイル名で書き込みを行う。
+                            srcFile = new FileInputStream(copiedFile[cnt]);
+//                            readData = new BufferedInputStream(srcFile);
+
+                            // コピー先ディレクトりを編集
                             strBld.setLength( 0 );      // 初期化
-                            strBld.append( System.getProperty("user.dir") );    // コピー先となるディレクトリーをセット
-                            int pos = copiedFile[cnt].lastIndexOf( "/" );
+                            strBld.append( destPath );    // コピー先となるディレクトリーをセット
+                            strBld.append( "/" );       // ファイル名を追加する前にseparatorを追加しておく。
+                            int pos = copiedFile[cnt].lastIndexOf( "/" );   // コピー元からファイル名だけを取得するため最後の／を検索
                             String fileMame = copiedFile[cnt].substring( pos+1, copiedFile[cnt].length() );
                             strBld.append( fileMame );      // ファイル名を追加
 
+                            // コピー先へ書き込みを行う。ファイル名は変更なし。
+                            destFile = new FileOutputStream( strBld.toString() );   // 出力先ファイル作成
+                            int data;
+                            while( -1 == ( data = srcFile.read() ) ){
+                                destFile.write( data );
+                            }
 
                         } catch (IOException e) { // FileNoExceptin はサブクラスになってるようなのでこれだけ指定する
                             e.printStackTrace();
                         } finally {
                             // ファイルが開いているなら必ず閉じる！！
-                            if (null != file) {
+                            if (null != srcFile) {  // コピー元ファイル
                                 try {
-                                    file.close();
-                                    Log.d(TAG_SD, "ファイル [" + copiedFile[cnt] + "] をコピーしました。");
+                                    srcFile.close();
+                                    Log.d(TAG_SD, "コピー元ファイル [" + srcFile + "] を閉じました。");
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-                            } // if ( null!=file)
-                        }
+                            } // if ( null!=srcFile)
+                            if ( null != destFile ) {   // コピー先ファイル
+                                try {
+                                    destFile.close();
+                                    Log.d(TAG_SD, "コピー先ファイル [" + destFile + "] を閉じました。");
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } // if ( null!=destFile)
+                        } // finally
                     } // for (int cnt = 0)
 
 //
