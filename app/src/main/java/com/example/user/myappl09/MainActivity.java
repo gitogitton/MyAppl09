@@ -338,7 +338,10 @@ public class MainActivity extends AppCompatActivity {
                     for ( int cnt=0; cnt<maxNum; cnt++ ) {
 // String型で処理した場合
                         copiedFile[cnt] = savedData.get( cnt ).getAbsolutePath();
-//                        copiedFile += "/";
+                        if ( 0<copiedFile[cnt].length() &&
+                                !copiedFile[cnt].substring(copiedFile[cnt].length()-1).equals("/") ) {     // パスが「/」で終わっていない場合はつける
+                            copiedFile[cnt] += "/";
+                        }
                         copiedFile[cnt] += savedData.get( cnt ).getText();
 
                         // 内容確認
@@ -348,6 +351,10 @@ public class MainActivity extends AppCompatActivity {
 // 初期化　例１                        copiedFileBld.delete( 0, copiedFileBld.length()-1 );
                         strBld.setLength( 0 );   // 初期化　例２
                         strBld.append( savedData.get( cnt ).getAbsolutePath() );
+                        if ( 0<strBld.toString().length() &&
+                                !strBld.toString().substring(strBld.toString().length()-1).equals("/") ) {     // パスが「/」で終わっていない場合はつける
+                            strBld.append( "/" );
+                        }
                         strBld.append( savedData.get( cnt ).getText() );
                         copiedFile[cnt] = strBld.toString();
 
@@ -360,7 +367,10 @@ public class MainActivity extends AppCompatActivity {
                             strBuff.delete(0, strBuff.length()-1);    // 初期化　例２
                         }
                         strBuff.append( savedData.get( cnt ).getAbsolutePath() );
-//                        copiedFileBuff.append( "/" );
+                        if ( 0<strBuff.toString().length() &&
+                                !strBuff.toString().substring(strBuff.toString().length()-1).equals("/") ) {     // パスが「/」で終わっていない場合はつける
+                            strBuff.append( "/" );
+                        }
                         strBuff.append( savedData.get( cnt ).getText() );
                         copiedFile[cnt] = strBuff.toString();
 
@@ -400,8 +410,8 @@ public class MainActivity extends AppCompatActivity {
                         FileOutputStream destFile = null;
                         try {
                             // コピー元ファイルを読み込む。
-                            srcFile = new FileInputStream(copiedFile[cnt]);
-//                            readData = new BufferedInputStream(srcFile);
+                            srcFile = new FileInputStream(copiedFile[cnt]);         // open file
+                            readData = new BufferedInputStream(srcFile);            // read file
 
                             // コピー先ディレクトりを編集
                             strBld.setLength( 0 );      // 初期化
@@ -413,12 +423,12 @@ public class MainActivity extends AppCompatActivity {
 
                             // コピー先へ書き込みを行う。ファイル名は変更なし。
                             destFile = new FileOutputStream( strBld.toString() );   // 出力先ファイル作成
-                            int data;
-                            while( -1 == ( data = srcFile.read() ) ){
+                            int data = -1;
+                            while( -1 != (data=srcFile.read()) ){
                                 destFile.write( data );
                             }
 
-                        } catch (IOException e) { // FileNoExceptin はサブクラスになってるようなのでこれだけ指定する
+                        } catch (IOException e) { // FileNoException はサブクラスになってるようなのでこれだけ指定する
                             e.printStackTrace();
                         } finally {
                             // ファイルが開いているなら必ず閉じる！！
