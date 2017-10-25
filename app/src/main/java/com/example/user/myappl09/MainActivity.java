@@ -322,8 +322,10 @@ public class MainActivity extends AppCompatActivity {
         switch( item.getItemId() ) {
 
             case android.R.id.home:     //呼び元に戻る。ここの場合、ずっとMainActivityなのでfinish()をCallするとアプリ画面が閉じてしまう・・・のだった・・・。
+            {
                 finish();
                 return true;
+            }
 
             case R.id.action_copy :     // コピー
             {
