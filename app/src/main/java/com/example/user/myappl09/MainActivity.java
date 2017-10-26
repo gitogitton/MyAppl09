@@ -452,6 +452,12 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             } // if ( null!=destFile)
                         } // finally
+
+                        // 明示的な null セット
+                        // ＧＣ任せなメモリー管理に慣れるのは無理・・・なような気がする。
+                        srcFile = null;
+                        destFile = null;
+
                     } // for (int cnt = 0)
 
 //
@@ -635,7 +641,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d( TAG_SD, "getUpFolerPath() --- start. [ currentPath = " + currentPath + " ]" );
 
         //引数を確認する。おかしな場合はルートディレクトリーを返却しておく。
-        if ( currentPath.isEmpty() ) {
+        if ( currentPath.isEmpty() ) {  // android studio v3 に更新した時エラーになった。gradle のバージョンが合わないとか。メッセージに従って更新すると直った。
             Toast.makeText( MainActivity.this, "指定されたパスが異常につき、\nルートを指定する。", Toast.LENGTH_LONG ).show();
             return ( "/" );      //よくわからんがルートを返しておこうか。
         }
