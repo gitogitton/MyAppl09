@@ -498,7 +498,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // 削除を実行する。
                     try {
-                        this.deleteFile( strBld.toString() );
+//test してからコメントを外す。                        this.deleteFile( strBld.toString() );
                     }
                     catch ( IllegalArgumentException e ) {
                         e.printStackTrace();
