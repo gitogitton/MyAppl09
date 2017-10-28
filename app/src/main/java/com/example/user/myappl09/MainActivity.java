@@ -2,6 +2,7 @@ package com.example.user.myappl09;
 
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -474,8 +475,38 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.action_delete :   // 削除
-                break;
+            {
+                // 選択データが無い場合は即時終了する。
+                if ( savedData.isEmpty() ) {
+                    Toast.makeText(MainActivity.this, "削除するデータがありません。", Toast.LENGTH_LONG).show();
+                    break;
+                }
+                // savedData の数だけ削除を繰り返す。
+                StringBuilder strBld = null;
+                for ( LineData data : savedData )
+                {
+                    // なかったら作る。
+                    if ( null==strBld ) {
+                        strBld = new StringBuilder();
+                    }
+                    // 削除対象のファイル名を絶対パスで指定する。
+                    strBld.setLength(0);
+                    strBld.append( data.getAbsolutePath() );
+                    strBld.append("/");
+                    strBld.append( data.getText() );
+                    Log.d( TAG_SD, "Target file name is [ "+ strBld.toString() + " ]." );
 
+                    // 削除を実行する。
+                    try {
+                        this.deleteFile( strBld.toString() );
+                    }
+                    catch ( IllegalArgumentException e ) {
+                        e.printStackTrace();
+                    }
+                } // for ( LineData data : savedData )
+                Toast.makeText(MainActivity.this, "削除を終了しました。", Toast.LENGTH_LONG).show();
+                break;
+            }
             case R.id.action_upFolder :      // Up Folder
 
                 // ファイルリスト用のTextViewに表示中のパス文字列を取得
