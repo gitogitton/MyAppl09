@@ -414,7 +414,7 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             // コピー元ファイルを読み込む。
                             srcFile = new FileInputStream(copiedFile[cnt]);         // open file
-                            readData = new BufferedInputStream(srcFile);            // read file
+//                            readData = new BufferedInputStream(srcFile);            // read file
 
                             // コピー先ディレクトりを編集
                             strBld.setLength( 0 );      // 初期化
