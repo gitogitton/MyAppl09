@@ -18,7 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedInputStream;
+//import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -37,8 +37,8 @@ public class MainActivity extends AppCompatActivity {
     String[] copiedFile = new String[FILE_NUM];    // 本当は可変長で処理したいけどとりあえず指定
     StringBuilder strBld = new StringBuilder();
     StringBuffer strBuff = new StringBuffer();
-    // コピー元ファイルの内容
-    BufferedInputStream readData = null;
+//    // コピー元ファイルの内容
+//    BufferedInputStream readData = null;
 
     CustomAdapter aAdapter;                 // ListView のアダプター
     int resultAlertDialog = RESULT_OK;  // 確認ダイアログのＯＫ／ＣＡＮＣＥＬボタンの結果を格納
@@ -426,7 +426,7 @@ public class MainActivity extends AppCompatActivity {
 
                             // コピー先へ書き込みを行う。ファイル名は変更なし。
                             destFile = new FileOutputStream( strBld.toString() );   // 出力先ファイル作成
-                            int data = -1;
+                            int data;
                             while( -1 != (data=srcFile.read()) ){
                                 destFile.write( data );
                             }
@@ -455,8 +455,8 @@ public class MainActivity extends AppCompatActivity {
 
                         // 明示的な null セット
                         // ＧＣ任せなメモリー管理に慣れるのは無理・・・なような気がする。
-                        srcFile = null;
-                        destFile = null;
+//                        srcFile = null;
+//                        destFile = null;
 
                     } // for (int cnt = 0)
 
