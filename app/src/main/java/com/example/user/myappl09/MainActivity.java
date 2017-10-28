@@ -412,10 +412,6 @@ public class MainActivity extends AppCompatActivity {
                         FileInputStream srcFile = null;
                         FileOutputStream destFile = null;
                         try {
-                            // コピー元ファイルを読み込む。
-                            srcFile = new FileInputStream(copiedFile[cnt]);         // open file
-//                            readData = new BufferedInputStream(srcFile);            // read file
-
                             // コピー先ディレクトりを編集
                             strBld.setLength( 0 );      // 初期化
                             strBld.append( destPath );    // コピー先となるディレクトリーをセット
@@ -423,6 +419,10 @@ public class MainActivity extends AppCompatActivity {
                             int pos = copiedFile[cnt].lastIndexOf( "/" );   // コピー元からファイル名だけを取得するため最後の／を検索
                             String fileMame = copiedFile[cnt].substring( pos+1, copiedFile[cnt].length() );
                             strBld.append( fileMame );      // ファイル名を追加
+
+                            // コピー元ファイルを読み込む。
+                            srcFile = new FileInputStream(copiedFile[cnt]);         // open file
+//                            readData = new BufferedInputStream(srcFile);            // read file
 
                             // コピー先へ書き込みを行う。ファイル名は変更なし。
                             destFile = new FileOutputStream( strBld.toString() );   // 出力先ファイル作成
