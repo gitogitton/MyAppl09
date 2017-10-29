@@ -300,12 +300,19 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d( TAG_SD, "onKeyDown() ---start." );
 
-// 戻るキーを一時的に無効にする処理　→　コメントアウト（2017/07/11）
-//        if ( keyCode == KeyEvent.KEYCODE_BACK ) {
+        if ( KeyEvent.KEYCODE_BACK==keyCode ) {
 //            // 戻るボタンの処理
 //            Toast.makeText( MainActivity.this, "戻るキーは押さないで！！！\n\n押すと不幸が起こるので禁止してます。", Toast.LENGTH_SHORT ).show();
-//            return false;
-//        }
+
+            // ダイアログで終了を確認する。
+            confirmFinishDialog();      // ここで止まってくれない・・・
+            if ( RESULT_CANCEL==resultAlertDialog ) {
+                // ”終了しない” が選択されたので戻る。
+                return false;
+            }
+        }
+
+        Log.d( TAG_SD, "onKeyDown() ---end." );
 
         return super.onKeyDown( keyCode, event );
     }
@@ -324,7 +331,6 @@ public class MainActivity extends AppCompatActivity {
 
             case android.R.id.home:     // 戻るボタン   // ここの場合、ずっとMainActivityなのでfinish()をCallするとアプリ画面が閉じてしまう・・・のだった・・・。
             {
-                //confirmFinishDialog();
                 finish();
                 return true;
             }
@@ -562,11 +568,11 @@ public class MainActivity extends AppCompatActivity {
     // ============================================================================================================
     // アプリを終了するか否かを確認する alertDialog を出力する。
     // ============================================================================================================
-    private void confirmFinishDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder( MainActivity.this );
+    private boolean confirmFinishDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder( this );
         builder.setTitle( "Confirm" );  // ダイアログのタイトル設定
         builder.setMessage( "アプリを終了しますか？" );    // ダイアログに表示するメッセージを設定
-        builder.setCancelable( false );      // backキーなどを押して、あるいは、その他操作でキャンセルされないようにする。ユーザの回答入力を待つ。
+        builder.setCancelable( true );      // backキーなどを押して、あるいは、その他操作でキャンセルされるようにする。
 
         // OKボタン押下時のリスナー登録
         builder.setPositiveButton( "いいです。", new DialogInterface.OnClickListener() {
@@ -606,6 +612,8 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog alertDlg = builder.create();
         alertDlg.show();
+
+        return(false);
     }
 
     // ============================================================================================================
@@ -616,7 +624,7 @@ public class MainActivity extends AppCompatActivity {
 //        builder = new AlertDialog.Builder( MainActivity.this );
         builder.setTitle( "Confirm" );  // ダイアログのタイトル設定
         builder.setMessage( "ファイル選択中の状態でフォルダ移動は出来ません。\n選択解除しますか？" );    // ダイアログに表示するメッセージを設定
-        builder.setCancelable( false );      // backキーなどを押して、あるいは、その他操作でキャンセルされないようにする。ユーザの回答入力を待つ。
+        builder.setCancelable( false );      // backキーなどを押して、あるいは、その他操作でキャンセルされないようにする。
 
         // OKボタン押下時のリスナー登録
         builder.setPositiveButton( "いいです。", new DialogInterface.OnClickListener() {
