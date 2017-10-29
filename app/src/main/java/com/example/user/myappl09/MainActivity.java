@@ -497,8 +497,16 @@ public class MainActivity extends AppCompatActivity {
                     Log.d( TAG_SD, "Target file name is [ "+ strBld.toString() + " ]." );
 
                     // 削除を実行する。
+                    File file;
                     try {
-//test してからコメントを外す。                        this.deleteFile( strBld.toString() );
+                        // deleteFile( file name ) は /data/data/パッケージ名/files/配下のファイルが削除対象・・・らしい。（illegal contain file separator が出た）
+                        // 任意にパスを切る場合は File#delete() を使用する・・・・らしい。
+                        //this.deleteFile( strBld.toString() );
+
+                        file = new File( strBld.toString() );
+                        if ( null==file || !file.delete() ) {
+                            Log.e( TAG_SD, "ファイル削除でエラーが発生（ファイル名：" + strBld.toString() + "）" );
+                        }
                     }
                     catch ( IllegalArgumentException e ) {
                         e.printStackTrace();
