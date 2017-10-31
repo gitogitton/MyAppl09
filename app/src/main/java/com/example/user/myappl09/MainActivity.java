@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
 //            Toast.makeText( MainActivity.this, "戻るキーは押さないで！！！\n\n押すと不幸が起こるので禁止してます。", Toast.LENGTH_SHORT ).show();
 
             // ダイアログで終了を確認する。
-            confirmFinishDialog();      // ここで止まってくれない・・・
+            confirmFinishDialog();      // ここで止まってくれないのだ・・・
             if ( RESULT_CANCEL==resultAlertDialog ) {
                 // ”終了しない” が選択されたので戻る。
                 return false;
@@ -568,6 +568,9 @@ public class MainActivity extends AppCompatActivity {
     // ============================================================================================================
     // アプリを終了するか否かを確認する alertDialog を出力する。
     // ============================================================================================================
+
+    // fragment の dialogfragment を使った方がいいのかな？
+
     private boolean confirmFinishDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder( this );
         builder.setTitle( "Confirm" );  // ダイアログのタイトル設定
@@ -619,6 +622,9 @@ public class MainActivity extends AppCompatActivity {
     // ============================================================================================================
     // 選択状態を解除するのか否かを確認する alertDialog を出力する。
     // ============================================================================================================
+
+    // fragment の dialogfragment を使った方がいいのかな？
+
     private void showAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder( MainActivity.this );
 //        builder = new AlertDialog.Builder( MainActivity.this );
