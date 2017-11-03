@@ -303,17 +303,11 @@ public class MainActivity extends AppCompatActivity {
         if ( KeyEvent.KEYCODE_BACK==keyCode ) {
 //            // 戻るボタンの処理
 //            Toast.makeText( MainActivity.this, "戻るキーは押さないで！！！\n\n押すと不幸が起こるので禁止してます。", Toast.LENGTH_SHORT ).show();
-
             // ダイアログで終了を確認する。
-            confirmFinishDialog();      // ここで止まってくれないのだ・・・
-            if ( RESULT_CANCEL==resultAlertDialog ) {
-                // ”終了しない” が選択されたので戻る。
-                return false;
-            }
+            showAlertDialog(R.string.alertDlg_message_fin);
+            return true;
         }
-
         Log.d( TAG_SD, "onKeyDown() ---end." );
-
         return super.onKeyDown( keyCode, event );
     }
 
@@ -545,145 +539,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected( item );
     }
 
-// 2017/07/11
-// いつのまにかカスタムダイアログとごっちゃになっていた気がする。
-// AlertDialogに戻るので、いったんソース無効。
-//
-//    // true = push OK / not true = push cancel
-//    private void dispDialog() {
-//
-//        // ダイアログに渡す値を設定（自動生成されるときにも使われる・・みたい・・・）
-//        // ここはメモのような気分で書いてます。今回はActivityから渡したいデータは無いので本当はいらないけれど一応書いてみたりして。
-//        Bundle savedArgs = new Bundle();
-//        savedArgs.putString( "title", "ｘｘｘダイアログ" );
-//        savedArgs.putShort( "value", (short)100 );
-//        // 目的のダイアログを表示
-//        confirmDialogFragment dlg = new confirmDialogFragment();
-//        dlg.setArguments( savedArgs );      // 自動的に再生成される時のために値を保存しておく。
-//        Dialog dialog = dlg.onCreateDialog( savedArgs );    // 設定する値も渡しておく。
-//        dialog.show();
-//
-//    }
-
-    // ============================================================================================================
-    // アプリを終了するか否かを確認する alertDialog を出力する。
-    // ============================================================================================================
-
-    // fragment の dialogfragment を使った方がいいのかな？
-
-    private boolean confirmFinishDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder( this );
-        builder.setTitle( "Confirm" );  // ダイアログのタイトル設定
-        builder.setMessage( "アプリを終了しますか？" );    // ダイアログに表示するメッセージを設定
-        builder.setCancelable( true );      // backキーなどを押して、あるいは、その他操作でキャンセルされるようにする。
-
-        // OKボタン押下時のリスナー登録
-        builder.setPositiveButton( "いいです。", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-// debug                        Toast.makeText( MainActivity.this, "confirmFinishDialog.onClick() of Positive button", Toast.LENGTH_SHORT ).show();
-                        resultAlertDialog = RESULT_OK;  // 確認ダイアログのＯＫを格納
-                    } // onClick()
-                } // DialogInterface.OnClickListener()
-        ); // setPositiveButton()
-
-        // CANCELボタン押下時のリスナー登録
-        builder.setNegativeButton( "ダメです。", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText( MainActivity.this, "confirmFinishDialog.onClick() of Negative button", Toast.LENGTH_SHORT ).show();
-                        resultAlertDialog = RESULT_CANCEL;  // 確認ダイアログのＣＡＮＣＥＬを格納
-                    } // onClick()
-                } // DialogInterface.OnClickListener()
-        ); // setNegativeButton()
-
-        // cancel()された時のリスナー
-        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                Log.d( "alertDialog", "setOnDismissListener.onCancel() runs." );
-            } // onCancel()
-        }); // setOnCancelListener()
-
-        // ダイアログが閉じるが実行された時のリスナー
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                Log.d( "alertDialog", "setOnDismissListener.onDismiss() runs." );
-            } // onDismiss()
-        }); // setOnDismissListener()
-
-        AlertDialog alertDlg = builder.create();
-        alertDlg.show();
-
-        return(false);
-    }
-
-    // ============================================================================================================
-    // 選択状態を解除するのか否かを確認する alertDialog を出力する。
-    // ============================================================================================================
-
-    // fragment の dialogfragment を使った方がいいのかな？
-
-    private void showAlertDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder( MainActivity.this );
-//        builder = new AlertDialog.Builder( MainActivity.this );
-        builder.setTitle( "Confirm" );  // ダイアログのタイトル設定
-        builder.setMessage( "ファイル選択中の状態でフォルダ移動は出来ません。\n選択解除しますか？" );    // ダイアログに表示するメッセージを設定
-        builder.setCancelable( false );      // backキーなどを押して、あるいは、その他操作でキャンセルされないようにする。
-
-        // OKボタン押下時のリスナー登録
-        builder.setPositiveButton( "いいです。", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-// debug                        Toast.makeText( MainActivity.this, "showAlertDialog.onClick() of Positive button", Toast.LENGTH_SHORT ).show();
-                        resultAlertDialog = RESULT_OK;  // 確認ダイアログのＯＫを格納
-                        savedData.clear();  // 選択中データをキャンセル状態にする。
-
-                        // ファイルリスト用のTextViewに表示中のパス文字列を取得
-                        TextView dispPath = (TextView)findViewById( R.id.textView4 );
-                        String currentPath = String.valueOf( dispPath.getText() );
-                        Log.d( TAG_SD, "builder.setPositiveButton [ currentPath = " + currentPath + " ]" );
-                        // ファイルリストを表示
-                        setDataOnListView( currentPath, (ListView)findViewById( R.id.fileList01 ) );
-
-                        Toast.makeText( MainActivity.this, "ファイルの選択状態を解除しました。", Toast.LENGTH_LONG ).show();
-
-                    } // onClick()
-                } // DialogInterface.OnClickListener()
-        ); // setPositiveButton()
-
-        // CANCELボタン押下時のリスナー登録
-        builder.setNegativeButton( "ダメです。", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText( MainActivity.this, "showAlertDialog.onClick() of Negative button", Toast.LENGTH_SHORT ).show();
-                        resultAlertDialog = RESULT_CANCEL;  // 確認ダイアログのＣＡＮＣＥＬを格納
-//                        dialog.cancel();
-                    } // onClick()
-                } // DialogInterface.OnClickListener()
-        ); // setNegativeButton()
-
-        // cancel()された時のリスナー
-        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                Log.d( "alertDialog", "setOnDismissListener.onCancel() runs." );
-            } // onCancel()
-        }); // setOnCancelListener()
-
-        // ダイアログが閉じるが実行された時のリスナー
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                Log.d( "alertDialog", "setOnDismissListener.onDismiss() runs." );
-            } // onDismiss()
-        }); // setOnDismissListener()
-
-        AlertDialog alertDlg = builder.create();
-        alertDlg.show();
-    }
-
     // ============================================================================================================
     //
     //指定されたパスの一つ上の階層にあたるパスを編集し返す。
@@ -890,5 +745,25 @@ public class MainActivity extends AppCompatActivity {
         Log.d( TAG_SD, "fileList.setAdapter() fin.");
 
     }
+// DialogFragment のため追加
+    // ============================================================================================================
+    // alertDialog を表示する。
+    // ============================================================================================================
+    public void showAlertDialog(int msg) {
+        MyAlertDialogFragment alertDlg = MyAlertDialogFragment.newInstance(R.string.alertDlg_title,msg);
+        // APIのサポート下限が１５なので getFragmentManager() は使用できない。
+        // かわりに getSupportFragmentManager() を使用する。
+        alertDlg.show(getSupportFragmentManager(),"dialog");
+    }
+    public void doPositiveClick() {
+        // Do stuff here.
+        Log.i(TAG_SD, "alertDialog : Positive click!");
+        finish();
+    }
+    public void doNegativeClick() {
+        // Do stuff here.
+        Log.i(TAG_SD, "alertDialog : Negative click!");
+    }
+// ここまで（DialogFragment のため追加）
 
 }
