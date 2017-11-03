@@ -25,38 +25,24 @@ public class MyAlertDialogFragment extends DialogFragment {
     //=======================================================================================
     // メソッド
     //=======================================================================================
-    public static class 
+    public static MyAlertDialogFragment newInstance(int title) {
+        MyAlertDialogFragment alertDlg = new MyAlertDialogFragment();
+        Bundle args = new Bundle();
+        args.putInt("title",title);
+        alertDlg.setArguments(args);
+
+        return alertDlg;
+    }
     @NonNull
+    @Override
     public Dialog onCreateDialog( Bundle savedInstanceState ) {
 
         Log.d( "MyAlertDialogFragment", "onCreateDialog() -------------> starts !!" );
 
-        // Use the Builder class for convenient dialog construction
-        //      https://teratail.com/questions/1600
-        //          ↓
-        //      FragmentはContextの子クラスではないのでContextを利用することが出来ません。
-        //      ですが、getActivity()を使うことでそれが可能になります。
-        //          http://developer.android.com/reference/android/app/Fragment.html#getActivity%28%29
-        //      getActivity()はFragmentを呼び出しているActivityをRetrunします。
-        //      Activity自身はContextをextendsしているためActivityを使うことでFragment内でContextを利用することが出来ます。
-        //
-
-//        Activity activity = getActivity();
-//        Context context = activity.getApplicationContext();
-//        AlertDialog.Builder builder = new AlertDialog.Builder( context, R.style.AlertDialog_Theme );
-////        AlertDialog.Builder builder = new AlertDialog.Builder( getContext() );
-
+        int title = getArguments().getInt("title");
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("確認");
-        builder.setMessage("ファイルの選択状態が解除されます。\nよろしいですか？");
-
-        Log.d( "MyAlertDialogFragment", "new AlertDialog.Builder() fin." );
-        Log.d( "MyAlertDialogFragment", "builder.setTitle() / setMessage() fin." );
-
-        // 記録されている値をキーをもとにして取得。おっこちて自動再生された場合でも値が残ってくれるのでとっておく。
-        String strTtitle = savedInstanceState.getString( "title" );
-        short value = savedInstanceState.getShort( "value" );
-        Log.d( "dialog Argments", "titile / value = [ " + strTtitle + value + " ]" );
+        //alertDlg.setIcon();
+        builder.setTitle(title);
 
         // OKボタンのキャプション設定とリスナー登録
         builder.setPositiveButton( "Yes",
