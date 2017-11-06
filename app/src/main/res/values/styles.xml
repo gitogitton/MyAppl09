@@ -1,11 +1,10 @@
 <resources>
 
-    <!-- Base application theme.
+<!-- Base application theme.
 original    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
     →    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">　アクションバーを表示しない。
 -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -14,33 +13,31 @@ original    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
 <!--
 ＊ToolBarのスタイルを設定する。
 -->
-    <style name="ToolbarTheme" parent="Theme.AppCompat.NoActionBar">
-            <!--タイトルテキストの色-->
-        <item name="android:textColorPrimary">@color/white_primary_text</item>
-        <!--ハンバーガーボタンなどのアイコンの色-->
-        <item name="android:textColorSecondary">@color/white</item>
-    </style>
-    <style name="ToolbarTextAppearance" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
-        <!--テキスト関係を変えられる。これはただの例。-->
-        <item name="android:textSize">30dp</item>
+    <!--toolbar自体の設定-->
+    <style name="ToolbarTheme" parent="@android:style/Theme.DeviceDefault.Light.NoActionBar">
+        <!--toolbarテキストの設定-->
+        <item name="android:textColorPrimary">@color/white</item>
+        <!-- ToolBarのOverflowメニューのテキスト -->
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/black</item>
     </style>
 
 <!--
 ＊AlertDialogのスタイルを設定する。
     AlertDialog.Builderの、第二引数 int themeResIdにテーマを指定することでカスタムのスタイルの適用することができる。
--->
     <style name="AlertDialog_Theme" parent="Theme.AppCompat.Light.Dialog">
 
     </style>
+-->
 <!--
 Custome Themeという名のテーマを追加してみる。ペアレントはAppTheme。
 未試験・・・。だめだ、、、
--->
     <style name="CustomTehme" parent="@style/AppTheme">
         <item name="android:textColor">#ff880000</item>
         <item name="android:textSize">25dp</item>
         <item name="colorPrimary">@android:color/holo_blue_light</item>
         <item name="android:textColorPrimaryInverse">@color/colorPrimaryDark</item>
     </style>
+-->
 
 </resources>

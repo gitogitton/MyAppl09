@@ -59,10 +59,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d( TAG_SD, "MainActivity : setContentView( activity_main ) fin." );
 
         //ツールバー
-        Toolbar toolbar = (Toolbar) findViewById( R.id.menu_main_1 );
-        Log.d( TAG_SD, "findViewById( menu_main_1 ) fin." );
+        // -> ツールバーはAPI21 (android v5.0) からの機能であるためAPI17からサポートしようと思ったら使えないので ActionBar を使用。
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_01);
         toolbar.setTitle( "ファイル一覧" );
         setSupportActionBar( toolbar );
+
 //
 // 今回はMainAvtivityのみを使用してリスト表示している。
 // これでHomeに戻ると前の階層にはならず終了してしまうので使用しない事にする。
@@ -504,7 +505,7 @@ public class MainActivity extends AppCompatActivity {
                         //this.deleteFile( strBld.toString() );
 
                         file = new File( strBld.toString() );
-                        if ( null==file || !file.delete() ) {
+                        if ( !file.delete() ) {
                             Log.e( TAG_SD, "ファイル削除でエラーが発生（ファイル名：" + strBld.toString() + "）" );
                         }
                     }
@@ -701,12 +702,13 @@ public class MainActivity extends AppCompatActivity {
             line.getTextView().setText( str2 );
             //=============================================================================================================
 
-//debug
-//            Log.d( TAG_SD, "line.getTextView().setText() = " + list[i].toString() );
             //
             //ArrayListに行データを設定
             //
             al.add( i, line );
+
+            String a = list[i].isDirectory()?"d":"";
+            Log.d(TAG_SD,"listed info. : "+line.getText()+" [ "+ a  +" ]");
 
         }//for()
         Log.d( TAG_SD, "ArrayListへ追加  -- end" );
