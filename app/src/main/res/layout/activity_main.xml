@@ -1,42 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+<!--
+※）constraintlayout では listview が toolbar, textview 分だけ下に下がってしまいリストがスクリーンからはみ出す。
+　　linearlayout にてようやく解決（？）。初心者だから・・・・。
+
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.example.user.myappl09.MainActivity">
-
+-->
 <!--
-include するとレイアウトが崩れてしまう。なぜか分からないがとりあえず先に進む。
+</android.support.constraint.ConstraintLayout>
+-->
 
     <include
         android:id="@+id/include_toolbar_01"
         layout="@layout/toolbar"/>
-   -->
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar_01"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="@style/ToolbarTheme">
-    </android.support.v7.widget.Toolbar>
+    <!--
+    include するとレイアウトが崩れてしまう。なぜか分からないがとりあえず先に進む。
+    → toolbar.xml の layout を ConstraintLayout から LinearLayout に変更して解決。よく考えると当たり前のような気がする。
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar_01"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="@style/ToolbarTheme">
+        </android.support.v7.widget.Toolbar>
+       -->
 
 <!--
-            app:layout_constraintTop_toBottomOf="@+id/include_toolbar_01"/>
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_01" />
 -->
     <TextView
-            android:id="@+id/textView4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#ffaaaaaa"
-            android:text="-"
-            android:textSize="25sp"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar_01"/>
+        android:id="@+id/textView4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffaaaaaa"
+        android:text="@string/initial_disp_char"
+        android:textSize="25sp"
+        app:layout_constraintTop_toBottomOf="@+id/include_toolbar_01" />
 
 <!--
-        android:layout_width="365dp"
-        android:layout_height="538dp"
  -->
     <ListView
         android:id="@+id/fileList01"
@@ -44,8 +58,6 @@ include するとレイアウトが崩れてしまう。なぜか分からない
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:listSelector="@drawable/listselector"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
 <!--
@@ -64,4 +76,4 @@ include するとレイアウトが崩れてしまう。なぜか分からない
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fileList01" />
 
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>

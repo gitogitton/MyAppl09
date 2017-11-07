@@ -8,6 +8,7 @@
     <string name="menuItem_delete">削除</string>
     <string name="menuItem_upRoot">／</string>
     <string name="menuItem_upFolder">．．／</string>
+    <string name="initial_disp_char">－－－</string>
     <string name="alertDlg_title">確認</string>
     <string name="alertDlg_message_fin">アプリを終了します。\nよろしいですか？</string>
     <string name="alertDlg_message_01">処理を「継続」すると選択中の項目が解除されます。\nよろしいですか？</string>

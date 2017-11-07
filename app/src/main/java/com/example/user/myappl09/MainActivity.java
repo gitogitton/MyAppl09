@@ -707,9 +707,6 @@ public class MainActivity extends AppCompatActivity {
             //
             al.add( i, line );
 
-            String a = list[i].isDirectory()?"d":"";
-            Log.d(TAG_SD,"listed info. : "+line.getText()+" [ "+ a  +" ]");
-
         }//for()
         Log.d( TAG_SD, "ArrayListへ追加  -- end" );
 /*
@@ -726,11 +723,15 @@ public class MainActivity extends AppCompatActivity {
         //      Comparatorはinterfaceだ！！
         //
         Collections.sort( al, new LineDataComparator() );
-//        //debug : al の内容確認
-//        for ( short i=0; i<al.size(); i++ ) {
-//            Log.d( TAG_SD, "al.get(" + i + ").getTextView().getText() = " + al.get(i).getTextView().getText() );
-//        }
+
+        //debug : al の内容確認
+        String a="-";
+        for ( short i=0; i<al.size(); i++ ) {
+            a = al.get(i).getFolderOrFile()?"d":"";
+            Log.d(TAG_SD,"listed info. : "+al.get(i).getText()+" [ "+ a +" ]");
+        }
         Log.d( TAG_SD, "ArrayList.add() fin." );
+
         //
         //ArrayAdapter に準備したデータを設定
         //  ・第１引数   ：       コンテキスト
