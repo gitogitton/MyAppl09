@@ -1,13 +1,15 @@
 <resources>
     <string name="app_name">MyAppl09</string>
+    <string name="menuItem_appEnd">アプリ終了</string>
     <string name="textviewCap">パスを表示する</string>
     <string name="No_Data">データがありません</string>
     <string name="List_Name">ファイル名一覧</string>
     <string name="menuItem_copy">コピー</string>
     <string name="menuItem_paste">貼付</string>
     <string name="menuItem_delete">削除</string>
-    <string name="menuItem_upRoot">／</string>
-    <string name="menuItem_upFolder">．．／</string>
+    <string name="menuItem_cut">切取り</string>
+    <string name="menuItem_upRoot">ルートへ戻る</string>
+    <string name="menuItem_upFolder">１つ上の階層へ戻る</string>
     <string name="initial_disp_char">－－－</string>
     <string name="alertDlg_title">確認</string>
     <string name="alertDlg_message_fin">アプリを終了します。\nよろしいですか？</string>

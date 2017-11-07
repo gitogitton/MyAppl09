@@ -4,18 +4,21 @@
     <item
         android:id="@+id/action_copy"
         android:title="@string/menuItem_copy"
+        android:icon="@drawable/ic_content_copy_white_24dp"
         android:orderInCategory="100"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_paste"
         android:title="@string/menuItem_paste"
+        android:icon="@drawable/ic_content_paste_white_24dp"
         android:orderInCategory="200"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_delete"
-        android:title="@string/menuItem_delete"
+        android:title="@string/menuItem_cut"
+        android:icon="@drawable/ic_content_cut_white_24dp"
         android:orderInCategory="300"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_upFolder"
         android:title="@string/menuItem_upFolder"
@@ -25,5 +28,10 @@
         android:id="@+id/action_upRoot"
         android:title="@string/menuItem_upRoot"
         android:orderInCategory="500"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_appEnd"
+        android:title="@string/menuItem_appEnd"
+        android:orderInCategory="600"
         app:showAsAction="never" />
 </menu>
