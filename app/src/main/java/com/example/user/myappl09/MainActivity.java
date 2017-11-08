@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -87,13 +89,13 @@ public class MainActivity extends AppCompatActivity {
                                                View view, int position, long id)  {
                     Log.d( PACKAGE_NAME, "onItemLongClick() start." );
 
-                    // 操作された ListView を取得
-                    ListView targetListView = (ListView)parent;
-                    // ListView（View情報）からLineData（１行の情報） 取得
-                    LineData item = (LineData) targetListView.getItemAtPosition( position );
+                    //操作された ListView を取得
+                    ListView listView = (ListView)parent;
+                    //選択された項目を処理する。(引数 1)押されたListView、2)押された項目のView、3)押された項目のArrayList内の位置、4)押された項目にセットされているID（多分一時的に振ってる）
+                    selectItem(listView, view, position, id);
 
                     Log.d( PACKAGE_NAME, "onItemLongClick() fin." );
-                    return( true );
+                    return( false ); //true にするとクリックが連動する。
                 } //onItemLongClick()
             }
         ); // End setOnItemLongClickListener()
@@ -102,13 +104,23 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText( this, "ファイル一覧を表示しています。", Toast.LENGTH_LONG ).show();
 
     } //onCreate()
-
+    // ============================================================================================================
+    //長押し時の処理
+    private void selectItem(ListView listView, View view, int position, long id) {
+        Log.d(PACKAGE_NAME,"selectItem() start.");
+        Log.d(PACKAGE_NAME,"arg="+listView+", "+view+", "+position+","+id);
+        if (view.isSelected()) {    //選択されている場合は未選択へ
+            view.setSelected(false);
+        } else {    //選択されていなければ選択へ
+            view.setSelected(true);
+        }
+        Log.d(PACKAGE_NAME,"selectItem() fin.");
+    }
     // ============================================================================================================
     //パスを表示
     private void setPath(int id,String str) {
         TextView tv = (TextView)findViewById(id);
         tv.setText(str);
-        return;
     }
     // ============================================================================================================
     //指定されたパスに従って内容を表示する処理
@@ -125,11 +137,10 @@ public class MainActivity extends AppCompatActivity {
         //directoryの内容をlistviewへ
         ListView fileList = (ListView)findViewById(listViewId); //listview取得
         fileList.setAdapter(arrayAdapter);    //listviewにadapterを指定
-        for( int i=0; i<arrayAdapter.getCount(); i++) {
-            Log.d(PACKAGE_NAME,"arrayAdapter list ["+i+"]"+arrayAdapter.getItem(i).toString());
-        }
+//        for( int i=0; i<arrayAdapter.getCount(); i++) {  //debug
+//            Log.d(PACKAGE_NAME, "arrayAdapter list [" + i + "]" + arrayAdapter.getItem(i).toString());
+//        }
         Log.d( PACKAGE_NAME, "setList() --- fin.");
-
     }
     // ============================================================================================================
     private File[] getFileListFromDir(String path) {

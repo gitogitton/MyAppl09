@@ -34,9 +34,10 @@ class CustomAdapter extends ArrayAdapter<File> {
         //再利用可能なViewがあったらそれを使う。なかったら新しく作成する。
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.file_list, parent, false);
+            Log.d(CLASS_NAME,"getView() view再利用出来ない。");
         }
 
-        Log.d(CLASS_NAME,"getView() start. [convertView:"+convertView.getId()+"]");
+        Log.d(CLASS_NAME,"getView() start. [convertView:"+convertView.toString()+"]");
 
         //表示するデータを取得
         File item = getItem(position);
