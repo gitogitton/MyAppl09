@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setTitle( "ファイル一覧" );
         setSupportActionBar( toolbar );
 
-
         //パスを表示
         setPath(R.id.textView4,FILE_SEPARATOR);
         // ファイルリストを表示する
@@ -113,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
     }
     // ============================================================================================================
     //指定されたパスに従って内容を表示する処理
-    // ============================================================================================================
     private void setList( String selectedPath, int listViewId ) {
 
         Log.d( PACKAGE_NAME, "setList() --- start. [ Indicated Path = " + selectedPath + " ]" );
@@ -148,22 +146,20 @@ public class MainActivity extends AppCompatActivity {
         return dirList;
     }
     // ============================================================================================================
+    //オーバーフローメニューを表示
     //
     //どこから呼ばれるかは自分で確認してみよう！！！親クラスから呼ばれてるんだろうけれど。
     //menu_main.xmlを定義し、本メソッドのオーバーライドでツールバーの端に縦点３つのやつが出てきた。
     //
     //menu選択時のアクションは「onOptionsItemSelected()」で実装
     //
-    // ============================================================================================================
     @Override
     public boolean onCreateOptionsMenu( Menu menu ) {
         getMenuInflater().inflate( R.menu.menu_main, menu );
         return true;
     }
-
     // ============================================================================================================
-    //
-    // ============================================================================================================
+    //ナビゲーションボタンのイベントを受ける。
     @Override
     public boolean onKeyDown( int keyCode, KeyEvent event ) {
 
@@ -178,18 +174,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown( keyCode, event );
     }
     // ============================================================================================================
-    //getSupportActionBar().setDisplayHomeAsUpEnabled( true ); を使う際に追加した。
+    //ナビゲーションボタンのイベントを処理
     // ============================================================================================================
     @Override
     public boolean onOptionsItemSelected( MenuItem item ) {
         Log.d( PACKAGE_NAME, "onOptionsItemSelected() --- start. [ menu = " + item.toString() + " ]" );
-
         switch( item.getItemId() ) {
-
             case android.R.id.home:     // 戻るボタン   // ここの場合、ずっとMainActivityなのでfinish()をCallするとアプリ画面が閉じてしまう・・・のだった・・・。
                 finish();
                 return true;
-
             case R.id.action_copy :     // コピー
                 if (!savedData.isEmpty()) {
                     int maxNum = savedData.size();
