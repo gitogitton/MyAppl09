@@ -51,13 +51,14 @@
         app:layout_constraintTop_toBottomOf="@+id/include_toolbar_01" />
 
 <!--
+        android:background="@color/white"
  -->
     <ListView
         android:id="@+id/fileList01"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
         android:listSelector="@drawable/listselector"
+        android:choiceMode="multipleChoice"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
 <!--

@@ -3,7 +3,7 @@
     <string name="menuItem_appEnd">アプリ終了</string>
     <string name="textviewCap">パスを表示する</string>
     <string name="No_Data">データがありません</string>
-    <string name="List_Name">ファイル名一覧</string>
+    <string name="List_Name">ファイル名</string>
     <string name="menuItem_copy">コピー</string>
     <string name="menuItem_paste">貼付</string>
     <string name="menuItem_delete">削除</string>

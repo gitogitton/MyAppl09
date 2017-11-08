@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.widget.TextView;
 
+import java.io.File;
+
 /*
  * Created by User on 2017/06/20.
  *
