@@ -25,7 +25,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
@@ -119,14 +122,14 @@ public class MainActivity extends AppCompatActivity {
         }
         //指定されたパスの ファイル一覧を 取得
         File[] list=getFileListFromDir(selectedPath);
-        CustomAdapter arrayAdapter=new CustomAdapter(getApplicationContext());   //adapterの生成
+        ArrayList<File> arrayList=new ArrayList<>(Arrays.asList(list)); //ArrayListを生成して初期化
+        CustomAdapter arrayAdapter=new CustomAdapter(getApplicationContext(),arrayList);   //adapterの生成。arrayListで初期化
         //directoryの内容をlistviewへ
         ListView fileList = (ListView)findViewById(listViewId); //listview取得
         fileList.setAdapter(arrayAdapter);    //listviewにadapterを指定
         for( int i=0; i<arrayAdapter.getCount(); i++) {
             Log.d(PACKAGE_NAME,"arrayAdapter list ["+i+"]"+arrayAdapter.getItem(i).toString());
         }
-        arrayAdapter.notifyDataSetChanged();
         Log.d( PACKAGE_NAME, "setList() --- fin.");
 
     }
