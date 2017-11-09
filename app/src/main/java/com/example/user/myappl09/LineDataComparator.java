@@ -11,6 +11,11 @@ import java.util.Comparator;
 class LineDataComparator implements Comparator<LineData> {
 
     @Override
+    public boolean equals(Object obj) {
+        return false;
+    }
+
+    @Override
     public int compare(LineData o1, LineData o2) {
 
         if ( null == o1 || null == o2 ) {
@@ -18,21 +23,18 @@ class LineDataComparator implements Comparator<LineData> {
             return( -1 );
         }
 
-        //
         //folder -> file の順にソート
-        //
         if ( true == o1.getFolderOrFile() && true != o2.getFolderOrFile() ) {
             return( -1 );
         }
         else if ( true != o1.getFolderOrFile() && true == o2.getFolderOrFile() ) {
             return( 1 );
         }
-        //
+
         // パス文字列でソートする。
-        //
-        String str1 = o1.getText();                 //比較する文字列取得
-        String str2 = o2.getText();                 //比較する文字列取得
-        //
+        String str1 = o1.getName();                 //比較する文字列取得
+        String str2 = o2.getName();                 //比較する文字列取得
+
         //o1とo2を比較
         //      String.compareTo("A") はUnicode値で大小を判定する。
         //      大文字小文字を区別するとの事で注意が必要。
@@ -43,12 +45,6 @@ class LineDataComparator implements Comparator<LineData> {
         //          正の値  : Stringは"A"より大きい
         //
         return( str1.compareTo( str2 ) );
-
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return false;
     }
 }
 

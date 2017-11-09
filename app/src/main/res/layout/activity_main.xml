@@ -52,14 +52,29 @@
 
 <!--
         android:background="@color/white"
+*) append paddingLeft, paddingRight, scrollbarSyle from google sample code.
+   remove listSelector definition. (android:listSelector="@drawable/listselector")
  -->
     <ListView
         android:id="@+id/fileList01"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:listSelector="@drawable/listselector"
+        android:paddingLeft="@dimen/list_padding"
+        android:paddingRight="@dimen/list_padding"
+        android:scrollbarStyle="outsideOverlay"
         android:choiceMode="multipleChoice"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
+<!--
+googleのlistviewサンプル sample_main.xml (https://developer.android.com/samples/CustomChoiceList/res/layout/sample_main.html) より抜粋
+    <ListView android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingLeft="@dimen/page_margin"
+        android:paddingRight="@dimen/page_margin"
+        android:scrollbarStyle="outsideOverlay"
+        android:choiceMode="multipleChoice" />
+-->
 
 <!--
  ListViewに表示するデータがない場合に表示する内容↓
