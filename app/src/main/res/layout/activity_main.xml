@@ -62,7 +62,7 @@
         android:paddingLeft="@dimen/list_padding"
         android:paddingRight="@dimen/list_padding"
         android:scrollbarStyle="outsideOverlay"
-        android:choiceMode="multipleChoice"
+        android:choiceMode="singleChoice"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 <!--
 googleのlistviewサンプル sample_main.xml (https://developer.android.com/samples/CustomChoiceList/res/layout/sample_main.html) より抜粋

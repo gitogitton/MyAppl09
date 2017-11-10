@@ -2,13 +2,14 @@ package com.example.user.myappl09;
 
 import android.util.Log;
 
+import java.io.File;
 import java.util.Comparator;
 
 //
 // Created by User on 2017/06/21.
 //
 
-class LineDataComparator implements Comparator<LineData> {
+class LineDataComparator implements Comparator<File> {
 
     @Override
     public boolean equals(Object obj) {
@@ -16,7 +17,7 @@ class LineDataComparator implements Comparator<LineData> {
     }
 
     @Override
-    public int compare(LineData o1, LineData o2) {
+    public int compare(File o1, File o2) {
 
         if ( null == o1 || null == o2 ) {
             Log.d( "LineDataComparator", "Illegal Argument [ o1=" + o1 + " o2=" + o2 + " ]" );
@@ -24,10 +25,10 @@ class LineDataComparator implements Comparator<LineData> {
         }
 
         //folder -> file の順にソート
-        if ( true == o1.getFolderOrFile() && true != o2.getFolderOrFile() ) {
+        if ( true == o1.isDirectory() && true != o2.isDirectory() ) {
             return( -1 );
         }
-        else if ( true != o1.getFolderOrFile() && true == o2.getFolderOrFile() ) {
+        else if ( true != o1.isDirectory() && true == o2.isDirectory() ) {
             return( 1 );
         }
 

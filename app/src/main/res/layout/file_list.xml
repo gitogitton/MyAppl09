@@ -7,6 +7,10 @@
 <!--
     <TextView
         android:id="@+id/textView"
+
+
+                android:checked="false"
+
 -->
     <CheckedTextView
         android:id="@+id/checkedTextView"

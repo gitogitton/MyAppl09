@@ -38,14 +38,14 @@ class CustomAdapter extends ArrayAdapter<LineData> {
             convertView = mInflater.inflate(R.layout.file_list, parent, false);
         }
 
-        Log.d(CLASS_NAME,"getView() start. [convertView:"+convertView.toString()+"]");
+//        Log.d(CLASS_NAME,"getView() start. [convertView:"+convertView.toString()+"]");
 
         //表示するデータを取得
         LineData item = getItem(position);
         CheckedTextView checkedTextView = (CheckedTextView) convertView.findViewById(R.id.checkedTextView);
         if(checkedTextView==null) { Log.d(CLASS_NAME,"tv is null."); }   //debug
         String msg = (item!=null?item.getName():"null");    //debug
-        Log.d(CLASS_NAME,"item.getName()="+msg);    //debug
+//        Log.d(CLASS_NAME,"item.getName()="+msg);    //debug
 //        assert textView != null;
         if (checkedTextView!=null) {
             checkedTextView.setText(item != null ? item.getName() : "null");  //ファイル名
@@ -58,7 +58,8 @@ class CustomAdapter extends ArrayAdapter<LineData> {
             icon.setBounds(0, 0, icon.getIntrinsicWidth(), icon.getIntrinsicHeight()); //ICONの表示位置を設定 (引数：座標 x, 座標 y, 幅, 高さ)
             checkedTextView.setCompoundDrawables(icon, null, null, null); //TextViewにアイコンセット（四辺(left, top, right, bottom)に対して別個にアイコンを描画できる）
         }//if(textView!=null)
-        Log.d(CLASS_NAME,"getView() fin.");
+
+//        Log.d(CLASS_NAME,"getView() end.");
 
         return convertView;
 

@@ -5,10 +5,13 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -18,6 +21,8 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,33 +56,38 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         Log.d(APPL_MAME,"onItemClick() start. [pos="+position+"/id="+id+"]");
-//
-// ListView.getChildAt(int position)で取れます。
-//
-                        LineData item = (LineData) parent.getItemAtPosition(position);
+
+                        selectItem((ListView)parent, view, position, id);
 
                         Log.d(APPL_MAME,"onItemClick() end.");
                     }
                 }
         );
+
         //Toastでメッセージ表示
         Toast.makeText( this, "ファイル一覧を表示しています。", Toast.LENGTH_LONG ).show();
 
     } //onCreate()
+
 
     // ============================================================================================================
     //長押し時の処理
     private void selectItem(ListView listView, View view, int position, long id) {
         Log.d(APPL_MAME,"selectItem() start.");
 
-        //一度でもチェックされたアイテムを取得
-        SparseBooleanArray checked = listView.getCheckedItemPositions();
-
-        for (int i = 0; i < checked.size(); i++) {
-            // チェックされているアイテムの key の取得
-            int key = checked.keyAt(i);
-            Log.d(APPL_MAME,"i="+i+"("+checked.toString()+")");
+        LineData item = (LineData) listView.getItemAtPosition(position);
+        if (item.isChecked()) {
+            Log.d(APPL_MAME,"isChecked() = true->false");
+//            item.setChecked(false);
+        } else {
+            Log.d(APPL_MAME,"isChecked() = false->true");
+//            item.setChecked(true);
         }
+        item.toggle();
+
+        CustomAdapter adapter = (CustomAdapter) listView.getAdapter();
+        adapter.add(item);
+//call automatically when add(),remove(),clear() are called.        adapter.notifyDataSetChanged();
 
         Log.d(APPL_MAME,"selectItem() fin.");
     }
@@ -98,8 +108,12 @@ public class MainActivity extends AppCompatActivity {
 
         //指定されたパスの ファイル一覧を 取得
         File[] list = new File(selectedPath).listFiles();
-//        ArrayList<File> arrayList=new ArrayList<>(Arrays.asList(list)); //ArrayListを生成して初期化
+
+        //表示内容（ArrayListの中身）を簡単にソート
+        //  Array.asList -> 配列を List （ような物）に変換する。ただし、ArrayList とは違う。
+        Collections.sort(Arrays.asList(list), new LineDataComparator());
         ArrayList<LineData> arrayList=new ArrayList<>(); //ArrayListを生成
+
         //arrayListへファイルの一覧情報をセットする。
         for (File file : list) {
             LineData lineData = new LineData(getApplicationContext());
@@ -108,16 +122,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // listViewへのadapter生成
-//        CustomAdapter arrayAdapter=new CustomAdapter(getApplicationContext(),arrayList);
         CustomAdapter arrayAdapter = new CustomAdapter(getApplicationContext(), arrayList);
 
         //directoryの内容をlistviewへ
         ListView listView = (ListView)findViewById(listViewId); //listview取得
         listView.setAdapter(arrayAdapter);    //listviewにadapterを指定
-
-//        for( int i=0; i<arrayAdapter.getCount(); i++) {  //debug
-//            Log.d(APPL_MAME, "arrayAdapter list [" + i + "]" + arrayAdapter.getItem(i).toString());
-//        }
 
         Log.d( APPL_MAME, "setList() --- end.");
     }
