@@ -65,11 +65,8 @@ class CustomAdapter extends ArrayAdapter<LineData> {
             icon.get().setBounds(0, 0, icon.get().getIntrinsicWidth(), icon.get().getIntrinsicHeight()); //ICONの表示位置を設定 (引数：座標 x, 座標 y, 幅, 高さ)
             textView.setCompoundDrawables(icon.get(), null, null, null); //TextViewにアイコンセット（四辺(left, top, right, bottom)に対して別個にアイコンを描画できる）
         }//if(textView!=null)
-
 //        Log.d(CLASS_NAME,"getView() end.");
-
         return convertView;
-
     }//getView()
 
 }//class

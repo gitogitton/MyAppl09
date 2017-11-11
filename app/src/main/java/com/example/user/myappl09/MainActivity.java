@@ -21,6 +21,7 @@ import android.widget.Toast;
 import org.w3c.dom.Text;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,8 +30,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     final String APPL_MAME = "ファイル一覧";
-    final String FILE_SEPARATOR=System.getProperty("file.separator");
-    final String ROOT_DIR=FILE_SEPARATOR;
+    final String FILE_SEPARATOR = System.getProperty("file.separator");
+    final String ROOT_DIR = FILE_SEPARATOR;
+    ArrayList<String> copiedFileList = new ArrayList<String>();
 
     // ============================================================================================================
     @Override
@@ -45,8 +47,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_01);
         toolbar.setTitle( "ファイル一覧" );
         setSupportActionBar( toolbar );
+        //ルートの内容をリストに表示
+        showListOfDirectory(FILE_SEPARATOR);
 
-        showListOfDir(FILE_SEPARATOR);
 //        //パスを表示
 //        TextView textView = (TextView)findViewById(R.id.textView4);
 //        setPath(textView,FILE_SEPARATOR);
@@ -65,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                         //クリックされたのがフォルダの場合は移動する。ファイルなら選択状態をトグルする。
                         LineData item = (LineData)parent.getItemAtPosition(position);
                         if (item.isDirectory()) {
-                            showListOfDir(item.getAbsolutePath());
+                            showListOfDirectory(item.getAbsolutePath());
                         } else {
                             selectItem((ListView) parent, view, position, id);
                         }
@@ -80,9 +83,9 @@ public class MainActivity extends AppCompatActivity {
     } //onCreate()
 
     // ============================================================================================================
-    //指定されたディレクトリの内容を表示
-    private void showListOfDir(String directoryName) {
-        Log.d(APPL_MAME,"showListOfDir start. [args="+directoryName+"]");
+    //指定されたディレクトリの内容をリストに設定
+    private void showListOfDirectory(String directoryName) {
+        Log.d(APPL_MAME,"showListOfDirectory start. [args="+directoryName+"]");
 
         //パスを表示
         TextView textView = (TextView)findViewById(R.id.textView4);
@@ -91,14 +94,14 @@ public class MainActivity extends AppCompatActivity {
         ListView listView = (ListView)findViewById(R.id.fileList01);
         setList(directoryName, listView);
 
-        Log.d(APPL_MAME,"showListOfDir end.");
+        Log.d(APPL_MAME,"showListOfDirectory end.");
     }
 
     // ============================================================================================================
-    //長押し時の処理
+    //チェック状態にする処理
     private void selectItem(ListView listView, View view, int position, long id) {
         Log.d(APPL_MAME,"selectItem() start.");
-
+        //チェック状態を反転する。
         LineData item = (LineData) listView.getItemAtPosition(position);
         if (item.isChecked()) {
             Log.d(APPL_MAME,"isChecked() = true->false");
@@ -108,20 +111,32 @@ public class MainActivity extends AppCompatActivity {
 //            item.setChecked(true);
         }
         item.toggle();
-
+        //リストにセット
         CustomAdapter adapter = (CustomAdapter) listView.getAdapter();
         adapter.add(item);
 //call automatically when add(),remove(),clear() are called.        adapter.notifyDataSetChanged();
-
         Log.d(APPL_MAME,"selectItem() fin.");
     }
+    //---------------------------------------------------------------------------
+    //checkされている項目を取得
+    private ArrayList<LineData> getCheckedItems() {
+        ArrayList<LineData> items = new ArrayList<>();
+        for (LineData everyItem : items) {
+            if (!everyItem.isChecked()) {
+                continue;
+            }
+            items.add(everyItem);
+        }
+        Log.d(APPL_MAME,"getCheckedItems() size="+items.size());
+        return items;
+    }
     // ============================================================================================================
-    //パスを表示
+    //パスを設定
     private void setPath(TextView textView,String str) {
         textView.setText(str);
     }
     // ============================================================================================================
-    //指定されたパスに従って内容を表示する処理
+    //指定されたパスに従って内容をリストに設定
     //(パスは絶対パスで！！)
     private void setList( String selectedPath, ListView listView ) {
 
@@ -129,10 +144,8 @@ public class MainActivity extends AppCompatActivity {
         if(selectedPath.isEmpty()) { //指定が無ければrootとする。
             selectedPath=System.getProperty("file.separator");
         }
-
         //指定されたパスの ファイル一覧を 取得
         File[] list = new File(selectedPath).listFiles();
-
         //表示内容（ArrayListの中身）を簡単にソート
         //  Array.asList -> 配列を List （ような物）に変換する。ただし、ArrayList とは違う。
         ArrayList<LineData> arrayList=new ArrayList<>(); //ArrayListを生成
@@ -145,10 +158,8 @@ public class MainActivity extends AppCompatActivity {
                 arrayList.add(lineData);
             }
         }
-
         // listViewへのadapter生成
         CustomAdapter arrayAdapter = new CustomAdapter(getApplicationContext(), arrayList);
-
         //directoryの内容をlistviewへ
         listView.setAdapter(arrayAdapter);    //listviewにadapterを指定
 
@@ -170,16 +181,20 @@ public class MainActivity extends AppCompatActivity {
         Log.d( APPL_MAME, "onOptionsItemSelected() --- start. [ menu = " + item.toString() + " ]" );
         switch( item.getItemId() ) {
             case R.id.action_upFolder :
-                String path = editDirectoryName();
+                String path = getParentDirectoryName();
                 if(path.length()>0) {
-                    showListOfDir(path);
+                    showListOfDirectory(path);
                 }
                 break;
             case R.id.action_appEnd :
                 showAlertDialog(R.string.alertDlg_message_fin);
                 break;
             case R.id.action_upRoot :
-                showListOfDir(FILE_SEPARATOR);
+                showListOfDirectory(FILE_SEPARATOR);
+                break;
+            case R.id.action_copy :
+                //コピー対象のファイルの情報を保存（実際のコピー処理はペーストされたタイミングで行う）
+                copyCheckedFileInfo();
                 break;
             default:
                 //do nothing
@@ -187,12 +202,34 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected( item );
     }
-    //直上のパスを編集
-    private String editDirectoryName() {
+
+    //--------------------------------------------
+    //ファイルコピー
+    private void copyCheckedFileInfo() {
+        //checkされたitemを取得
+        ArrayList<LineData> items = getCheckedItems();
+        for (LineData everyItem : items) {
+            String absolutePath = everyItem.getAbsolutePath();
+            StringBuilder stringBuilder = new StringBuilder(absolutePath);
+            if (!absolutePath.equals(FILE_SEPARATOR)) { //絶対パスがルートでなければ末尾に区切り文字を入れる。
+                stringBuilder.setLength(0);
+                stringBuilder.append(FILE_SEPARATOR);
+            }
+            stringBuilder.append(everyItem.getName());  //ファイル名をセット
+            absolutePath = stringBuilder.toString();    //絶対パスでのファイル名作成完了
+            copiedFileList.add(absolutePath);
+            Log.d(APPL_MAME, "add copiedFileList --> "+absolutePath);
+        }
+        return;
+    }
+
+    //--------------------------------------------
+    //直上のパスを取得
+    private String getParentDirectoryName() {
         //現在表示中のパス文字列を取得
         TextView textView = (TextView)findViewById(R.id.textView4);
         String path = textView.getText().toString();
-        Log.d(APPL_MAME,"editDirectoryName() specified path="+path);
+        Log.d(APPL_MAME,"getParentDirectoryName() specified path="+path);
         if (path.equals(FILE_SEPARATOR)) {
 //あとで作成(???)            showInfomationDialog("現在、ルートディレクトリーです。")
             showAlertDialog(R.string.informationDlg_message_01);
@@ -206,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             editedPath = path.substring(0, index);
         }
-        Log.d(APPL_MAME,"editDirectoryName() edited path="+editedPath);
+        Log.d(APPL_MAME,"getParentDirectoryName() edited path="+editedPath);
         return editedPath;
     }
     // ============================================================================================================
@@ -217,8 +254,17 @@ public class MainActivity extends AppCompatActivity {
         Log.d( APPL_MAME, "onKeyDown() ---start." );
 
         if ( KeyEvent.KEYCODE_BACK==keyCode ) {
-            // ダイアログで終了を確認する。
-            showAlertDialog(R.string.alertDlg_message_fin);
+            //現在表示中のパス文字列を取得
+            TextView textView = (TextView)findViewById(R.id.textView4);
+            String path = textView.getText().toString();
+            if (path.equals(FILE_SEPARATOR)) {
+                //ダイアログで終了を確認する。
+                showAlertDialog(R.string.alertDlg_message_fin);
+            } else {
+                //直上のディレクトリーのパス取得
+                String parentPath = getParentDirectoryName();
+                showListOfDirectory(parentPath);
+            }
             return true;
         }
         Log.d( APPL_MAME, "onKeyDown() fin." );
