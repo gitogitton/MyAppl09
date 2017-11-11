@@ -26,6 +26,7 @@ class LineData extends android.support.v7.widget.AppCompatCheckedTextView {
     public String getName() {
         return file.getName();
     }
+    public String getAbsolutePath() { return  file.getAbsolutePath(); }
 
     public boolean isDirectory() {
         return file.isDirectory();
@@ -81,9 +82,9 @@ class LineData extends android.support.v7.widget.AppCompatCheckedTextView {
         return( this.folder );
     }
     //パス取得
-    String getAbsolutePath() {
-        return( this.absolutePath );
-    }
+//    String getAbsolutePath() {
+//        return( this.absolutePath );
+//    }
     //選択状態取得
     boolean getSelected() {
         return( this.selected );

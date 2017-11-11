@@ -14,6 +14,7 @@
     <string name="alertDlg_title">確認</string>
     <string name="alertDlg_message_fin">アプリを終了します。\nよろしいですか？</string>
     <string name="alertDlg_message_01">処理を「継続」すると選択中の項目が解除されます。\nよろしいですか？</string>
+    <string name="informationDlg_message_01">現在、ルートディレクトリーです。</string>
     <string name="dialog_ok">継続</string>
     <string name="dialog_cancel">中止</string>
     <string name="dialog_delay">保留</string>
