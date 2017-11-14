@@ -11,11 +11,13 @@
     <string name="menuItem_upRoot">ルートへ戻る</string>
     <string name="menuItem_upFolder">１つ上の階層へ戻る</string>
     <string name="initial_disp_char">－－－</string>
-    <string name="alertDlg_title">確認</string>
+    <string name="alertDlg_title">通知</string>
     <string name="alertDlg_message_fin">アプリを終了します。\nよろしいですか？</string>
     <string name="alertDlg_message_01">処理を「継続」すると選択中の項目が解除されます。\nよろしいですか？</string>
-    <string name="informationDlg_message_01">現在、ルートディレクトリーです。</string>
-    <string name="dialog_ok">継続</string>
-    <string name="dialog_cancel">中止</string>
-    <string name="dialog_delay">保留</string>
+    <string name="alertDlg_message_02">［貼り付け］するファイルが無いです。</string>
+    <string name="alertDlg_message_03">同じディレクトリーには［貼り付け］出来ません。</string>
+    <string name="alertDlg_message_04">現在、ルートディレクトリーです。</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_delay">Pending</string>
 </resources>

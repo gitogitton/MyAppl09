@@ -4,36 +4,41 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.SparseBooleanArray;
-import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AbsListView;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//import java.io.BufferedInputStream;
-import org.w3c.dom.Text;
-
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.lang.reflect.Array;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     final String APPL_MAME = "ファイル一覧";
     final String FILE_SEPARATOR = System.getProperty("file.separator");
     final String ROOT_DIR = FILE_SEPARATOR;
-    ArrayList<String> copiedFileList = new ArrayList<String>();
+    //ダイアログのタイプ定義
+    final int INFORMATION_DIALOG_BUTTON = 0;        //情報の通知（ＯＫのみ）
+    final int ALERT_DIALOG_BUTTUN = 1;               //確認メッセージ表示（ＯＫ，Ｃａｎｃｅｌ）
+    final int ALERT_DIALOG_BUTTON_PENDDING = 2 ;   //確認メッセージ表示（ＯＫ，Ｃａｎｃｅｌ，Ｐｅｎｄｉｎｇ
+    final int CONFIRM_APP_END_DIALOG_BUTTON = 3;   //アプリ終了確認（ＯＫ，Ｃａｎｃｅｌ）
+
+    ArrayList<LineData> mCopiedFileList = new ArrayList<LineData>();
 
     // ============================================================================================================
     @Override
@@ -50,16 +55,13 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar( toolbar );
         //ルートの内容をリストに表示
         showListOfDirectory(FILE_SEPARATOR);
-
-//        //パスを表示
-//        TextView textView = (TextView)findViewById(R.id.textView4);
-//        setPath(textView,FILE_SEPARATOR);
-//        // ファイルリストを表示する
-//        ListView listView = (ListView)findViewById(R.id.fileList01);
-//        setList(ROOT_DIR, listView);       //初期表示はルートディレクトリー。
+        //ListView取得
+        ListView listView = (ListView)findViewById(R.id.fileList01);
+        //ListViewが空の場合のＶｉｅｗを指定しておく
+        View emptyView = findViewById(R.id.emptyView);
+        listView.setEmptyView(emptyView);
 
         //ListViewの行にクリック時のlistenerを登録
-        ListView listView = (ListView)findViewById(R.id.fileList01);
         listView.setOnItemClickListener(
                 new AdapterView.OnItemClickListener() {
                     @Override
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
                             showListOfDirectory(item.getAbsolutePath());
                         } else {
                             selectItem((ListView) parent, view, position, id);
+                            refreshList((ListView)findViewById(R.id.fileList01));
                         }
                         Log.d(APPL_MAME,"onItemClick() end.");
                     }
@@ -79,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         );
 
         //Toastでメッセージ表示
-        Toast.makeText( this, "ファイル一覧を表示しています。", Toast.LENGTH_LONG ).show();
+        Toast.makeText( getApplicationContext(), "ファイル一覧を表示しています。", Toast.LENGTH_LONG ).show();
 
     } //onCreate()
 
@@ -106,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.action_appEnd :
-                showAlertDialog(R.string.alertDlg_message_fin);
+                showAlertDialog(R.string.alertDlg_message_fin, CONFIRM_APP_END_DIALOG_BUTTON);
                 break;
             case R.id.action_upRoot :
                 showListOfDirectory(FILE_SEPARATOR);
@@ -115,11 +118,104 @@ public class MainActivity extends AppCompatActivity {
                 //コピー対象のファイルの情報を保存（実際のコピー処理はペーストされたタイミングで行う）
                 copyCheckedFileInfo();
                 break;
+            case R.id.action_paste :
+                pasteCheckedFiles();
+                refreshList((ListView)findViewById(R.id.fileList01));
+                break;
             default:
                 //do nothing
                 break;
         }
         return super.onOptionsItemSelected( item );
+    }
+
+    //---------------------------------------------------------------------
+    //ListViewの再描画処理
+    private void refreshList(ListView listView) {
+        CustomAdapter adapter = (CustomAdapter)listView.getAdapter();
+        listView.getEmptyView().setEnabled(adapter.isEmpty()); //空であればemptyViewの内容を表示
+        adapter.notifyDataSetChanged();
+    }
+
+    //---------------------------------------------------------------------
+    //ペースト処理
+    private void pasteCheckedFiles() {
+        //コピーされたファイルがない場合は終了
+        if (mCopiedFileList.isEmpty()) {
+            showAlertDialog(R.string.alertDlg_message_02, INFORMATION_DIALOG_BUTTON);  //「コピーするファイルが無いです。」
+            return;
+        }
+        //コピー元と同じディレクトリーのファイルを含む場合はコピーしない。
+        String dstPath = ((TextView)findViewById(R.id.textView4)).getText().toString();
+        for (LineData item : mCopiedFileList) {
+            //同じディレクトリー内でのコピーの場合はエラー。
+            int pos = item.getAbsolutePath().lastIndexOf(FILE_SEPARATOR);
+            String srcPath = ( pos>0 ? item.getAbsolutePath().substring(0, pos) : FILE_SEPARATOR ); //ファイル名を除いたパスの部分だけ取得
+            if (srcPath.equals(dstPath)) {
+                showAlertDialog(R.string.alertDlg_message_03, INFORMATION_DIALOG_BUTTON);  //「同じディレクトリーには貼り付け出来ません。」
+                return;
+            }
+        }
+        //adapterを取得
+        ListView listView = (ListView)findViewById(R.id.fileList01);
+        CustomAdapter adapter = (CustomAdapter)listView.getAdapter();
+        //ファイルコピーを行う。
+        DataInputStream srcFile = null;
+        DataOutputStream dstFile = null;
+        byte[] data = new byte[4096];
+        for (LineData copiedFile : mCopiedFileList) {
+            try {
+                //コピー元ファイルを開く
+                srcFile = new DataInputStream(
+                                new BufferedInputStream(
+                                        new FileInputStream(copiedFile.getAbsolutePath())));
+                //コピー先ファイル絶対パス編集
+                String dstDirectory = ((TextView) findViewById(R.id.textView4)).getText().toString();
+                StringBuilder stringBuilder = new StringBuilder(dstDirectory);
+                if (!dstDirectory.equals(FILE_SEPARATOR)) { //ルートでなければ "/" を末尾に付加
+                    stringBuilder.append(FILE_SEPARATOR);
+                }
+                String dstName = stringBuilder.append(copiedFile.getName()).toString(); //ファイル名を付加（同名）
+                //コピー先ファイルを開く
+                dstFile = new DataOutputStream(
+                                new BufferedOutputStream(
+                                        new FileOutputStream(dstName)));
+                //コピー先に同名でファイル書き込み
+                int readByte;
+                while(-1 != ( readByte = srcFile.read(data) )) {
+                    dstFile.write(data, 0, readByte);
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
+            try {
+                //コピー元ファイルを閉じる
+                if (srcFile!=null) {
+                    srcFile.close();
+                }
+                //コピー先ファイルを閉じる
+                if (dstFile!=null) {
+                    dstFile.close();
+                }
+            } catch (IOException e) {
+                e.getStackTrace();
+            }
+
+            //adapterへ追加
+            adapter.add(copiedFile);
+
+        }//for (String copiedFile : copiedFileList)
+
+        //貼り付けが完了したのでコピー情報を消去
+        mCopiedFileList.clear();
+
+        String msg = "貼り付けを完了しました。";
+        Toast.makeText( getApplicationContext(), msg, Toast.LENGTH_LONG ).show();
+        return;
     }
 
     // ============================================================================================================
@@ -135,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
             String path = textView.getText().toString();
             if (path.equals(FILE_SEPARATOR)) {
                 //ダイアログで終了を確認する。
-                showAlertDialog(R.string.alertDlg_message_fin);
+                showAlertDialog(R.string.alertDlg_message_fin, 1);
             } else {
                 //直上のディレクトリーのパス取得
                 String parentPath = getParentDirectoryName();
@@ -176,9 +272,6 @@ public class MainActivity extends AppCompatActivity {
 //            item.setChecked(true);
         }
         item.toggle();
-        //リストにセット
-        CustomAdapter adapter = (CustomAdapter) listView.getAdapter();
-        adapter.notifyDataSetChanged();
         Log.d(APPL_MAME,"selectItem() fin.");
     }
     //---------------------------------------------------------------------------
@@ -238,17 +331,11 @@ public class MainActivity extends AppCompatActivity {
         //checkされたitemを取得
         ArrayList<LineData> items = getCheckedItems();
         for (LineData everyItem : items) {
-            String absolutePath = everyItem.getAbsolutePath();
-            StringBuilder stringBuilder = new StringBuilder(absolutePath);
-            if (!absolutePath.equals(FILE_SEPARATOR)) { //絶対パスがルートでなければ末尾に区切り文字を入れる。
-                stringBuilder.setLength(0);
-                stringBuilder.append(FILE_SEPARATOR);
-            }
-            stringBuilder.append(everyItem.getName());  //ファイル名をセット
-            absolutePath = stringBuilder.toString();    //絶対パスでのファイル名作成完了
-            copiedFileList.add(absolutePath);
-            Log.d(APPL_MAME, "add copiedFileList --> "+absolutePath);
+            mCopiedFileList.add(everyItem);
+            Log.d(APPL_MAME, "add mCopiedFileList --> "+everyItem.getAbsolutePath());
         }
+        String msg = items.isEmpty() ? "コピーするファイルは有りません。" : "コピーしました。";
+        Toast.makeText( getApplicationContext(), msg, Toast.LENGTH_LONG ).show();
         return;
     }
 
@@ -260,8 +347,7 @@ public class MainActivity extends AppCompatActivity {
         String path = textView.getText().toString();
         Log.d(APPL_MAME,"getParentDirectoryName() specified path="+path);
         if (path.equals(FILE_SEPARATOR)) {
-//あとで作成(???)            showInfomationDialog("現在、ルートディレクトリーです。")
-            showAlertDialog(R.string.informationDlg_message_01);
+            showAlertDialog(R.string.alertDlg_message_04,INFORMATION_DIALOG_BUTTON);
             return "";
         }
         //直上のディレクトリーを絶対パスで取得
@@ -279,16 +365,18 @@ public class MainActivity extends AppCompatActivity {
 // 以下はDialogFragment のため追加
     // ============================================================================================================
     // alertDialog を表示する。
-    public void showAlertDialog(int msg) {
-        MyAlertDialogFragment alertDlg = MyAlertDialogFragment.newInstance(R.string.alertDlg_title,msg);
+    public void showAlertDialog(int msg, int type) {
+        MyDialogFragment alertDlg = MyDialogFragment.newInstance(R.string.alertDlg_title,msg,type);
         // APIのサポート下限が１５なので getFragmentManager() は使用できない。
         // かわりに getSupportFragmentManager() を使用する。
         alertDlg.show(getSupportFragmentManager(),"dialog");
     }
-    public void doPositiveClick() {
+    public void doPositiveClick(int type) {
         // Do stuff here.
         Log.i(APPL_MAME, "alertDialog : Positive click!");
-        finish();
+        if (type==1) {
+            finish();
+        }
     }
     public void doNegativeClick() {
         // Do stuff here.

@@ -25,12 +25,16 @@ original    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
     </style>
 
 <!--
-＊AlertDialogのスタイルを設定する。
-    AlertDialog.Builderの、第二引数 int themeResIdにテーマを指定することでカスタムのスタイルの適用することができる。
-    <style name="AlertDialog_Theme" parent="Theme.AppCompat.Light.Dialog">
+ * ダイアログのテーマを定義して統一することも出来る。（DialogFragment.setStyle(x,x)）
+   下記に加えて、buttonBarButtonStyle.Neutral などを本style.xml内に定義してフォント、フォントサイズ等いろいろ指定してください。
 
+    <style name="InfDialog_Theme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="buttonBarPositiveButtonStyle">@style/buttonBarButtonStyle.Neutral</item>
+        <item name="buttonBarNegativeButtonStyle">@style/buttonBarButtonStyle.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/buttonBarButtonStyle.Neutral</item>
     </style>
 -->
+
 <!--
 Custome Themeという名のテーマを追加してみる。ペアレントはAppTheme。
 未試験・・・。だめだ、、、
