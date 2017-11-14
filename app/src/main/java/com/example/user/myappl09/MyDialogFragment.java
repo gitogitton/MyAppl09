@@ -10,6 +10,10 @@ import android.util.Log;
 
 public class MyDialogFragment extends DialogFragment {
 
+    public static final int INFORMATION_DIALOG_OK = 0;        //情報の通知（ＯＫのみ）
+    public static final int ALERT_DIALOG_OK_NG = 1;               //確認メッセージ表示（ＯＫ，Ｃａｎｃｅｌ）
+    public static final int ALERT_DIALOG_OK_NG_PENDDING = 2 ;   //確認メッセージ表示（ＯＫ，Ｃａｎｃｅｌ，Ｐｅｎｄｉｎｇ
+
     private static int mType;
 
     // Fragmentの再生成の時に呼ばれるので、引数なしのpublicなコンストラクタが必要、、、なの？
