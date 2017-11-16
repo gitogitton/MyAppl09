@@ -1,6 +1,5 @@
 package com.example.user.myappl09;
 
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -10,8 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,27 +19,26 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    final String APPL_MAME = "ファイル一覧";
-    final String FILE_SEPARATOR = System.getProperty("file.separator");
-    final String ROOT_DIR = FILE_SEPARATOR;
+    private final String APPL_MAME = "ファイル一覧";
+    private final String FILE_SEPARATOR = System.getProperty("file.separator");
+    private final String ROOT_DIR = FILE_SEPARATOR;
+
+    //メニューの状態定義
+    private final int MENU_NORMAL = 0;          //通常メニュー
+    private final int MENU_COPY = 1;            //［コピー］実行中のメニュー
+    private final int MENU_CUT = 2;             //［切り取り］実行中のメニュー
+    private int mCurrentMenu = MENU_NORMAL;    //実行中のメニュー
+
     //ダイアログでＯＫされた時の処理
     private boolean mAppEnd = false;            //フラグ＝アプリ終了が指定された
-    private boolean mDeleteFiles = false;       //フラグ＝削除を実行中
-    //[貼り付け]処理の実行モード
-    private char mMode = 0;     //貼り付け実行時のモード。下記の２つ。
-    private final char PASTE_BY_COPY = 0;       //コピーからの貼り付け時
-    private final char PASTE_BY_CUT = 1;        //切り取りからの貼り付け時
     //チェックされた項目を保存する領域
     private  ArrayList<LineData> mSelectedFileList = new ArrayList<LineData>();
 
@@ -79,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
                         if (item.isDirectory()) {
                             showListOfDirectory(item.getAbsolutePath());
                         } else {
-                            setChecked((ListView) parent, view, position, id);
+                            //チェック状態を反転する。
+                            item.toggle();
                             refreshList((ListView)findViewById(R.id.fileList01));
                         }
                         Log.d(APPL_MAME,"onItemClick() end.");
@@ -93,52 +90,91 @@ public class MainActivity extends AppCompatActivity {
     } //onCreate()
 
     // ============================================================================================================
-    //overflowmenを表示
-    //  どこから呼ばれるかは自分で確認してみよう！！！親クラスから呼ばれてるんだろうけれど。
-    //  menu_main.xmlを定義し、本メソッドのオーバーライドでツールバーの端に縦点３つのやつが出てきた。
+    //メニュー表示
     @Override
     public boolean onCreateOptionsMenu( Menu menu ) {
+        Log.d(APPL_MAME, "onCreateOptionsMenu() start.");
         getMenuInflater().inflate( R.menu.menu_main, menu );
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
-
+    //メニューの動的な切り替え
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) {
+        Log.d(APPL_MAME, "onPrepareOptionsMenu() start.");
+        if (mCurrentMenu==MENU_COPY) {
+            //［貼り付け］［キャンセル］有効
+            menu.findItem(R.id.action_paste).setVisible(true);
+            menu.findItem(R.id.action_cancel).setVisible(true);
+            menu.findItem(R.id.action_copy).setVisible(false);
+            menu.findItem(R.id.action_cut).setVisible(false);
+        } else if (mCurrentMenu==MENU_CUT) {
+            //［貼り付け］［キャンセル］有効
+            menu.findItem(R.id.action_paste).setVisible(true);
+            menu.findItem(R.id.action_cancel).setVisible(true);
+            menu.findItem(R.id.action_copy).setVisible(false);
+            menu.findItem(R.id.action_cut).setVisible(false);
+        } else if (mCurrentMenu==MENU_NORMAL) {
+            //［コピー］［切り取り］有効
+            menu.findItem(R.id.action_paste).setVisible(false);
+            menu.findItem(R.id.action_cancel).setVisible(false);
+            menu.findItem(R.id.action_copy).setVisible(true);
+            menu.findItem(R.id.action_cut).setVisible(true);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
     // ============================================================================================================
-    //overflowmenuのイベントを処理
+    //メニュー選択時のイベント処理
     @Override
     public boolean onOptionsItemSelected( MenuItem item ) {
         Log.d( APPL_MAME, "onOptionsItemSelected() --- start. [ menu = " + item.toString() + " ]" );
         switch( item.getItemId() ) {
+            case R.id.action_appEnd : //アプリ終了
+                showAlertDialog(R.string.alertDlg_q_appEnd, MyDialogFragment.ALERT_DIALOG_OK_NG);
+                mAppEnd = true;
+                break;
             case R.id.action_upFolder : //上のディレクトリへ
                 String path = getParentDirectoryName();
                 if(path.length()>0) {
                     showListOfDirectory(path);
                 }
                 break;
-            case R.id.action_appEnd : //アプリ終了
-                showAlertDialog(R.string.alertDlg_q_appEnd, MyDialogFragment.ALERT_DIALOG_OK_NG);
-                mAppEnd = true;
-                break;
             case R.id.action_upRoot : //ルートへ
                 showListOfDirectory(FILE_SEPARATOR);
                 break;
             case R.id.action_copy : //コピー
                 //コピー対象のファイルの情報を保存（実際のコピー処理はペーストされたタイミングで行う）
-                mMode = PASTE_BY_COPY;
-                setSelecteItemList();
+                if ( setSelecteItemList() ) {
+                    mCurrentMenu = MENU_COPY;
+                    invalidateOptionsMenu();
+                }
                 break;
             case R.id.action_paste : //貼り付け
                 pasteSelectedFiles();
                 refreshList((ListView)findViewById(R.id.fileList01));
+                mCurrentMenu = MENU_NORMAL;
+                invalidateOptionsMenu();
                 break;
             case R.id.action_cut : //切り取り
-                mMode = PASTE_BY_CUT;
-                cutSelectedFiles();
-                refreshList((ListView)findViewById(R.id.fileList01));
+                if ( cutSelectedFiles() ) {
+                    refreshList((ListView)findViewById(R.id.fileList01));
+                    mCurrentMenu = MENU_CUT;
+                    invalidateOptionsMenu();
+                }
                 break;
+            case R.id.action_cancel : //実行取り消し
+                returnFileFromCacheToOriginalDirectory();
+                showCurrentList();
+                refreshList( (ListView)findViewById(R.id.fileList01) );
+                mSelectedFileList.clear();
+                mCurrentMenu = MENU_NORMAL;
+                invalidateOptionsMenu();
+                break;
+
 //            case R.id.action_delete : //削除
 //                deleteSelectedFiles();
 //                refreshList((ListView)findViewById(R.id.fileList01));
 //                break;
+
             default:
                 //do nothing
                 break;
@@ -151,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
     private void copySelectedFilesToCache() {
 
         for (LineData item : mSelectedFileList) {
-            //コピー先ファイルを開く
+            //コピー先パス編集
             String dstFilePath = getApplicationContext().getCacheDir().toString();
             Log.d(APPL_MAME, "Cache Directory : " + dstFilePath);
             if (dstFilePath.length()>0) {
@@ -164,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
 //                        dstFilePath = stringBuilder.toString();
                     dstFilePath = dstFilePath+FILE_SEPARATOR;
                 }
+                //コピー先パス編集
                 dstFilePath = dstFilePath+item.getName();   //ファイル名セット
             }
             //コピー実行
@@ -235,13 +272,16 @@ public class MainActivity extends AppCompatActivity {
 
     //---------------------------------------------------------------------
     //指定されたファイルを切り取る。
-    private void cutSelectedFiles() {
+    private boolean cutSelectedFiles() {
 
         //listViewからcheckされている項目を取得し、mSelectedFileList へ保存する。（コピー）
-        setSelecteItemList();
+        boolean result = setSelecteItemList();
+        if (result==false ) {
+            return false;
+        }
         //アプリのキャッシュ領域にファイルを退避する。
         copySelectedFilesToCache();  //切り取りがキャンセルされたら戻せ！！！
-        //コピー元ファイルを削除する。
+        //コピー元ファイルを削除する確認ダイアログを表示
         deleteSelectedFiles();
 
 //debug : キャッシュの中身を見たい！！！(日本語のファイルがadbで見えない・・・)
@@ -249,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
         for (File item : listDirectory) {
             Log.d(APPL_MAME, "Directory Cntents : "+item.getName());
         }
-
+        return true;
     }
 
     //---------------------------------------------------------------------
@@ -276,7 +316,6 @@ public class MainActivity extends AppCompatActivity {
             showAlertDialog(R.string.alertDlg_notSpecifidFile, MyDialogFragment.INFORMATION_DIALOG_OK);
             return;
         }
-        mDeleteFiles = true;
         showAlertDialog(R.string.alertDlg_q_deleteFile, MyDialogFragment.ALERT_DIALOG_OK_NG);
     }
 
@@ -321,7 +360,7 @@ public class MainActivity extends AppCompatActivity {
 
         //パスを表示
         TextView textView = (TextView)findViewById(R.id.textView4);
-        setPath(textView,directoryName);
+        textView.setText(directoryName);
         //リストを表示
         ListView listView = (ListView)findViewById(R.id.fileList01);
         setList(directoryName, listView);
@@ -329,22 +368,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(APPL_MAME,"showListOfDirectory end.");
     }
 
-    // ============================================================================================================
-    //チェック状態にする処理
-    private void setChecked(ListView listView, View view, int position, long id) {
-        Log.d(APPL_MAME,"setChecked() start.");
-        //チェック状態を反転する。
-        LineData item = (LineData) listView.getItemAtPosition(position);
-        if (item.isChecked()) {
-            Log.d(APPL_MAME,"isChecked() = true->false");
-//            item.setChecked(false);
-        } else {
-            Log.d(APPL_MAME,"isChecked() = false->true");
-//            item.setChecked(true);
-        }
-        item.toggle();
-        Log.d(APPL_MAME,"setChecked() fin.");
-    }
     //---------------------------------------------------------------------------
     //checkされている項目を取得
     private ArrayList<LineData> getCheckedItemsFromView() {
@@ -360,11 +383,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(APPL_MAME,"getCheckedItemsFromView() size="+items.size());
         return items;
     }
-    // ============================================================================================================
-    //パスを設定
-    private void setPath(TextView textView,String str) {
-        textView.setText(str);
-    }
+
     // ============================================================================================================
     //指定されたパスに従って内容をリストに設定
     //(パスは絶対パスで！！)
@@ -398,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
 
     //--------------------------------------------
     //ファイルコピー
-    private void setSelecteItemList() {
+    private boolean setSelecteItemList() {
         //ListView から check されたitemを取得
         ArrayList<LineData> items = getCheckedItemsFromView();
         //mSelectedFileList へコピー
@@ -407,9 +426,10 @@ public class MainActivity extends AppCompatActivity {
             mSelectedFileList.add(everyItem);
             Log.d(APPL_MAME, "add mSelectedFileList --> "+everyItem.getAbsolutePath());
         }
-        String msg = items.isEmpty() ? "コピーするファイルは有りません。" : "コピーしました。";
-        Toast.makeText( getApplicationContext(), msg, Toast.LENGTH_LONG ).show();
-        return;
+        if (!mSelectedFileList.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "コピーしました。", Toast.LENGTH_LONG).show();
+        }
+        return mSelectedFileList.isEmpty() ? false:true;
     }
 
     //---------------------------------------------------------------------
@@ -475,14 +495,14 @@ public class MainActivity extends AppCompatActivity {
 
             //コピー元ファイル名編集
             String sourcePath;
-            if (mMode==PASTE_BY_COPY) {  //[コピー] ＆ [貼り付け]
+            if (mCurrentMenu==MENU_COPY) {  //[コピー] ＆ [貼り付け]
                 sourcePath = copiedFile.getAbsolutePath();
-            } else if (mMode==PASTE_BY_CUT) {        //[切り取り] ＆ [貼り付け]  等
+            } else if (mCurrentMenu==MENU_CUT) {        //[切り取り] ＆ [貼り付け]  等
                 sourcePath = getApplicationContext().getCacheDir().getAbsolutePath();
                 sourcePath = sourcePath + FILE_SEPARATOR + copiedFile.getName();
             } else {
                 showAlertDialog(R.string.alertDlg_IllegalParameter, MyDialogFragment.INFORMATION_DIALOG_OK);
-                Log.d(APPL_MAME, "pasteSelectedFiles() : mMode = "+mMode);
+                Log.d(APPL_MAME, "pasteSelectedFiles() : mMode = "+mCurrentMenu);
                 return;
             }
             //コピー先ファイル絶対パス編集
@@ -547,8 +567,8 @@ public class MainActivity extends AppCompatActivity {
         // Do stuff here.
         Log.i(APPL_MAME, "alertDialog : Positive click!");
 
-        if (mDeleteFiles) { //ファイル削除の場合
-            mDeleteFiles = false;
+        if (mCurrentMenu==MENU_CUT) { //ファイル削除、又は、切り取りの場合
+            mCurrentMenu = MENU_NORMAL;
             executeDeleteFiles();
             refreshList( (ListView)findViewById(R.id.fileList01) );
         } else if (mAppEnd) { //アプリ終了フラグがＯＮの場合終了する。
@@ -561,7 +581,38 @@ public class MainActivity extends AppCompatActivity {
         Log.i(APPL_MAME, "alertDialog : Negative click!");
         if (mAppEnd==true) { //アプリ終了フラグがＯＮならＯＦＦする。
             mAppEnd = false;
+        } else if (mCurrentMenu==MENU_CUT) { //ファイル削除、又は、切り取りの場合
+            cancelAction(mCurrentMenu);
+            returnFileFromCacheToOriginalDirectory();
+            refreshList( (ListView)findViewById(R.id.fileList01) );
+            mCurrentMenu = MENU_NORMAL;
+            invalidateOptionsMenu();
         }
     }
 // ここまで（DialogFragment のため追加）
+    //-------------------------------------------------------------------------------------
+    //編集中のリストをもとに戻す。
+    private void cancelAction(int action) {
+        ListView listView = (ListView)findViewById(R.id.fileList01);
+        CustomAdapter adapter = (CustomAdapter)listView.getAdapter();
+        for (LineData item : mSelectedFileList) {
+            for (int i=0; i<adapter.getCount(); i++) {
+                //ファイル名で検索
+                String path =  adapter.getItem(i).getAbsolutePath();
+                if (item.getAbsolutePath().equals(path)) {
+                    adapter.getItem(i).setChecked(false);
+                    break;
+                }
+            }
+        }
+    }
+    //-------------------------------------------------------------------------------------
+    //表示中のディレクトリーの内容を取得
+    private void showCurrentList() {
+        ListView listView = (ListView)findViewById(R.id.fileList01);
+        TextView textView = (TextView)findViewById(R.id.textView4);
+        setList(textView.getText().toString(), listView);
+        CustomAdapter adapter = (CustomAdapter) listView.getAdapter();
+        adapter.notifyDataSetChanged();
+    }
 }

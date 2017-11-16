@@ -1,24 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+<!--
+※）めにゅーを切り替える時に以下を削除
+-->
+
     <item
         android:id="@+id/action_copy"
         android:title="@string/menuItem_copy"
         android:icon="@drawable/ic_content_copy_white_24dp"
         android:orderInCategory="100"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_paste"
         android:title="@string/menuItem_paste"
         android:icon="@drawable/ic_content_paste_white_24dp"
         android:orderInCategory="200"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_cut"
         android:title="@string/menuItem_cut"
         android:icon="@drawable/ic_content_cut_white_24dp"
         android:orderInCategory="300"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_cancel"
+        android:title="@string/menuItem_cancel"
+        android:icon="@drawable/ic_cancel_white_24dp"
+        android:orderInCategory="400"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_upFolder"
         android:title="@string/menuItem_upFolder"
@@ -32,6 +43,6 @@
     <item
         android:id="@+id/action_appEnd"
         android:title="@string/menuItem_appEnd"
-        android:orderInCategory="600"
+        android:orderInCategory="700"
         app:showAsAction="never" />
 </menu>
