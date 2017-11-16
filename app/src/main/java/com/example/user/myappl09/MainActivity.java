@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setTitle( "ファイル一覧" );
         setSupportActionBar( toolbar );
         //ルートの内容をリストに表示
-        showListOfDirectory(FILE_SEPARATOR);
+        showListOfDirectory(ROOT_DIR);
         //ListView取得
         ListView listView = (ListView)findViewById(R.id.fileList01);
         //ListViewが空の場合のＶｉｅｗを指定しておく
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.action_upRoot : //ルートへ
-                showListOfDirectory(FILE_SEPARATOR);
+                showListOfDirectory(ROOT_DIR);
                 break;
             case R.id.action_copy : //コピー
                 //コピー対象のファイルの情報を保存（実際のコピー処理はペーストされたタイミングで行う）
