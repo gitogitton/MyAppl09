@@ -31,6 +31,12 @@
         android:orderInCategory="400"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_delete"
+        android:title="削除"
+        android:icon="@drawable/ic_delete_white_24dp"
+        android:orderInCategory="450"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_upFolder"
         android:title="@string/menuItem_upFolder"
         android:orderInCategory="500"

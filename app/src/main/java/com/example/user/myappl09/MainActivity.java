@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private final int MENU_NORMAL = 0;          //通常メニュー
     private final int MENU_COPY = 1;            //［コピー］実行中のメニュー
     private final int MENU_CUT = 2;             //［切り取り］実行中のメニュー
+    private final int MENU_DELETE = 3;          //［削除］実行中のメニュー
     private int mCurrentMenu = MENU_NORMAL;    //実行中のメニュー
 
     //ダイアログでＯＫされた時の処理
@@ -101,24 +102,34 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) {
         Log.d(APPL_MAME, "onPrepareOptionsMenu() start.");
+        //実行中のメニューにより使えるメニューを変更する
         if (mCurrentMenu==MENU_COPY) {
             //［貼り付け］［キャンセル］有効
             menu.findItem(R.id.action_paste).setVisible(true);
             menu.findItem(R.id.action_cancel).setVisible(true);
             menu.findItem(R.id.action_copy).setVisible(false);
             menu.findItem(R.id.action_cut).setVisible(false);
+            menu.findItem(R.id.action_delete).setVisible(false);
         } else if (mCurrentMenu==MENU_CUT) {
             //［貼り付け］［キャンセル］有効
             menu.findItem(R.id.action_paste).setVisible(true);
             menu.findItem(R.id.action_cancel).setVisible(true);
             menu.findItem(R.id.action_copy).setVisible(false);
             menu.findItem(R.id.action_cut).setVisible(false);
+            menu.findItem(R.id.action_delete).setVisible(false);
         } else if (mCurrentMenu==MENU_NORMAL) {
-            //［コピー］［切り取り］有効
+            //［コピー］［切り取り］［削除］有効
             menu.findItem(R.id.action_paste).setVisible(false);
             menu.findItem(R.id.action_cancel).setVisible(false);
             menu.findItem(R.id.action_copy).setVisible(true);
             menu.findItem(R.id.action_cut).setVisible(true);
+            menu.findItem(R.id.action_delete).setVisible(true);
+        } else if ( mCurrentMenu==MENU_DELETE) {
+            menu.findItem(R.id.action_paste).setVisible(false);
+            menu.findItem(R.id.action_cancel).setVisible(true);
+            menu.findItem(R.id.action_copy).setVisible(false);
+            menu.findItem(R.id.action_cut).setVisible(false);
+            menu.findItem(R.id.action_delete).setVisible(false);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -143,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_copy : //コピー
                 //コピー対象のファイルの情報を保存（実際のコピー処理はペーストされたタイミングで行う）
-                if ( setSelecteItemList() ) {
+                if ( setSelectedItemList() ) {
                     mCurrentMenu = MENU_COPY;
                     invalidateOptionsMenu();
                 }
@@ -169,12 +180,15 @@ public class MainActivity extends AppCompatActivity {
                 mCurrentMenu = MENU_NORMAL;
                 invalidateOptionsMenu();
                 break;
-
-//            case R.id.action_delete : //削除
-//                deleteSelectedFiles();
-//                refreshList((ListView)findViewById(R.id.fileList01));
-//                break;
-
+            case R.id.action_delete : //削除
+                //listViewからcheckされている項目を取得し、mSelectedFileList へ保存する。
+                if ( !setSelectedItemList() ) {
+                    break;
+                }
+                confirmDeletion();
+                mCurrentMenu = MENU_DELETE;
+                invalidateOptionsMenu();
+                break;
             default:
                 //do nothing
                 break;
@@ -195,9 +209,6 @@ public class MainActivity extends AppCompatActivity {
                 String lastChar =String.valueOf(c);
                 if (!lastChar.equals(FILE_SEPARATOR)) {
                     //末尾に区切り文字を入れる。
-//                        StringBuilder stringBuilder = new StringBuilder(dstFilePath);
-//                        stringBuilder.append(FILE_SEPARATOR);
-//                        dstFilePath = stringBuilder.toString();
                     dstFilePath = dstFilePath+FILE_SEPARATOR;
                 }
                 //コピー先パス編集
@@ -274,15 +285,16 @@ public class MainActivity extends AppCompatActivity {
     //指定されたファイルを切り取る。
     private boolean cutSelectedFiles() {
 
-        //listViewからcheckされている項目を取得し、mSelectedFileList へ保存する。（コピー）
-        boolean result = setSelecteItemList();
-        if (result==false ) {
+        //listViewからcheckされている項目を取得し、mSelectedFileList へ保存する。
+        if ( !setSelectedItemList() ) {
             return false;
         }
+
         //アプリのキャッシュ領域にファイルを退避する。
         copySelectedFilesToCache();  //切り取りがキャンセルされたら戻せ！！！
+
         //コピー元ファイルを削除する確認ダイアログを表示
-        deleteSelectedFiles();
+        confirmDeletion();
 
 //debug : キャッシュの中身を見たい！！！(日本語のファイルがadbで見えない・・・)
         File[] listDirectory = new File( getApplicationContext().getCacheDir().getAbsolutePath() ).listFiles();
@@ -309,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
 
     //---------------------------------------------------------------------
     //削除して良いか？のメッセージ表示
-    private void deleteSelectedFiles() {
+    private void confirmDeletion() {
         //ListView から選択されたファイルを取得
         ArrayList<LineData> selectedItems = getCheckedItemsFromView();
         if (selectedItems.isEmpty()) {
@@ -417,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
 
     //--------------------------------------------
     //ファイルコピー
-    private boolean setSelecteItemList() {
+    private boolean setSelectedItemList() {
         //ListView から check されたitemを取得
         ArrayList<LineData> items = getCheckedItemsFromView();
         //mSelectedFileList へコピー
@@ -426,9 +438,9 @@ public class MainActivity extends AppCompatActivity {
             mSelectedFileList.add(everyItem);
             Log.d(APPL_MAME, "add mSelectedFileList --> "+everyItem.getAbsolutePath());
         }
-        if (!mSelectedFileList.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "コピーしました。", Toast.LENGTH_LONG).show();
-        }
+//        if (!mSelectedFileList.isEmpty()) {
+//            Toast.makeText(getApplicationContext(), "内部で記憶！！", Toast.LENGTH_LONG).show();
+//        }
         return mSelectedFileList.isEmpty() ? false:true;
     }
 
@@ -567,10 +579,11 @@ public class MainActivity extends AppCompatActivity {
         // Do stuff here.
         Log.i(APPL_MAME, "alertDialog : Positive click!");
 
-        if (mCurrentMenu==MENU_CUT) { //ファイル削除、又は、切り取りの場合
-            mCurrentMenu = MENU_NORMAL;
+        if (mCurrentMenu==MENU_CUT || mCurrentMenu==MENU_DELETE) { //ファイル削除、又は、切り取りの場合
             executeDeleteFiles();
             refreshList( (ListView)findViewById(R.id.fileList01) );
+            mCurrentMenu = MENU_NORMAL;
+            invalidateOptionsMenu();
         } else if (mAppEnd) { //アプリ終了フラグがＯＮの場合終了する。
             mAppEnd = false;
             finish();
@@ -581,7 +594,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i(APPL_MAME, "alertDialog : Negative click!");
         if (mAppEnd==true) { //アプリ終了フラグがＯＮならＯＦＦする。
             mAppEnd = false;
-        } else if (mCurrentMenu==MENU_CUT) { //ファイル削除、又は、切り取りの場合
+        } else if (mCurrentMenu==MENU_CUT || mCurrentMenu==MENU_DELETE ) { //ファイル削除、又は、切り取りの場合
             cancelAction(mCurrentMenu);
             returnFileFromCacheToOriginalDirectory();
             refreshList( (ListView)findViewById(R.id.fileList01) );
