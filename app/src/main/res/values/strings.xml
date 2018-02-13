@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MyAppl09</string>
+    <string name="app_name">File List</string>
     <string name="menuItem_appEnd">アプリ終了</string>
     <string name="textviewCap">パスを表示する</string>
     <string name="No_Data">データがありません</string>

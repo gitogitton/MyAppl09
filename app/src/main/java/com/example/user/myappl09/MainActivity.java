@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             menu.findItem(R.id.action_paste).setVisible(false);
             menu.findItem(R.id.action_cancel).setVisible(false);
             menu.findItem(R.id.action_copy).setVisible(true);
-            menu.findItem(R.id.action_cut).setVisible(true);
+            menu.findItem(R.id.action_cut).setVisible(false);
             menu.findItem(R.id.action_delete).setVisible(true);
         } else if ( mCurrentMenu==MENU_DELETE) {
             menu.findItem(R.id.action_paste).setVisible(false);
