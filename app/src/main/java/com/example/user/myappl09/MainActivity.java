@@ -1,5 +1,12 @@
 package com.example.user.myappl09;
 
+import android.Manifest;
+import android.content.DialogInterface;
+import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.PermissionChecker;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -25,11 +32,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
+
 public class MainActivity extends AppCompatActivity {
 
     private final String APPL_MAME = "ファイル一覧";
     private final String FILE_SEPARATOR = System.getProperty("file.separator");
     private final String ROOT_DIR = FILE_SEPARATOR;
+    private final String INIT_DIR = "/sdcard";     //機種変更でアンドロイドのバージョンが上がった。で、権限強化で（？）ルートにアクセスできないので初期表示を変える。
 
     //メニューの状態定義
     private final int MENU_NORMAL = 0;          //通常メニュー
@@ -37,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private final int MENU_CUT = 2;             //［切り取り］実行中のメニュー
     private final int MENU_DELETE = 3;          //［削除］実行中のメニュー
     private int mCurrentMenu = MENU_NORMAL;    //実行中のメニュー
+
+    //Request code
+    private final int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 1; //WRITE_EXTERNAL_STORAGE パーミッション要求
 
     //ダイアログでＯＫされた時の処理
     private boolean mAppEnd = false;            //フラグ＝アプリ終了が指定された
@@ -56,13 +69,28 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_01);
         toolbar.setTitle( "ファイル一覧" );
         setSupportActionBar( toolbar );
-        //ルートの内容をリストに表示
-        showListOfDirectory(ROOT_DIR);
+
+        //パスを表示
+        TextView textView = (TextView)findViewById(R.id.textView4);
+        textView.setText( INIT_DIR );
+
         //ListView取得
         ListView listView = (ListView)findViewById(R.id.fileList01);
         //ListViewが空の場合のＶｉｅｗを指定しておく
         View emptyView = findViewById(R.id.emptyView);
         listView.setEmptyView(emptyView);
+
+        //機種変更に伴う処理追加（android4.4からandroid7.1.1へ変わった）
+        //パーミッションチェックを追加（api23から変わったらしい）
+        if ( Build.VERSION.SDK_INT >= 23 ) {
+            checkPermissions();
+        }
+        else {
+            //ルートの内容をリストに表示
+            showListOfDirectory( INIT_DIR );
+            //Toastでメッセージ表示
+            Toast.makeText( getApplicationContext(), "ファイル一覧を表示しています。", Toast.LENGTH_LONG ).show();
+        }
 
         //ListViewの行にクリック時のlistenerを登録
         listView.setOnItemClickListener(
@@ -85,10 +113,80 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
-        //Toastでメッセージ表示
-        Toast.makeText( getApplicationContext(), "ファイル一覧を表示しています。", Toast.LENGTH_LONG ).show();
-
     } //onCreate()
+
+    private void checkPermissions() {
+        //Apiバージョン２３以上なら！！
+        if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+            int permissionRead = checkSelfPermission( Manifest.permission.READ_EXTERNAL_STORAGE );
+            int permissionWrite = checkSelfPermission( Manifest.permission.READ_EXTERNAL_STORAGE );
+            if ( permissionRead == PERMISSION_GRANTED && permissionWrite == PERMISSION_GRANTED ) {
+                showListOfDirectory( INIT_DIR );
+            }
+            else {
+                reqPermissions();
+//                Toast.makeText( getApplicationContext(), "パーミッションエラー", Toast.LENGTH_LONG ).show();
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+//        Log.d( APPL_MAME, "onRequestPermissionsResult() start. reqCode="+requestCode+
+//                " Permission="+permissions[0]+" Results="+grantResults[0] );
+
+        if ( requestCode == MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE) {
+            if ( ( grantResults.length >= 2 ) &&
+                    ( grantResults[0] == PermissionChecker.PERMISSION_GRANTED &&
+                            grantResults[1] == PermissionChecker.PERMISSION_GRANTED ) ) { //許可された場合
+                //ルートの内容をリストに表示
+                showListOfDirectory( INIT_DIR );
+            }
+        }
+
+    }
+
+    private void reqPermissions() {
+        boolean should = ActivityCompat.shouldShowRequestPermissionRationale(  this,
+                Manifest.permission.READ_EXTERNAL_STORAGE  );
+        // パーミッションが必要である理由をユーザに説明すべきときはこちら！！
+        if ( should ) {
+
+            // Show an expanation to the user *asynchronously* -- don't block
+            // this thread waiting for the user's response! After the user
+            // sees the explanation, try again to request the permission.
+
+            //説明のためのUIを自分で実装しなきゃならない！！
+            Log.d( APPL_MAME, "shouldShowRequestPermissionRationale() == true" );
+
+// 権限チェックした結果、持っていない場合はダイアログを出す
+            new AlertDialog.Builder(this)
+                    .setTitle("パーミッションの追加理由")
+                    .setMessage("このアプリではディクス読み込み／書き込みの権限が必要です。")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                                    MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE);
+                        }
+                    })
+                    .create()
+                    .show();
+
+        } else {    //ユーザに説明が必要ない場合はこちら
+
+            ActivityCompat.requestPermissions( this,
+                    new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
+                    MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE);
+
+            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        }
+    }
 
     // ============================================================================================================
     //メニュー表示
@@ -146,12 +244,18 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_upFolder : //上のディレクトリへ
                 String path = getParentDirectoryName();
                 if(path.length()>0) {
-                    showListOfDirectory(path);
+                    if ( checkPremissionDenied( path ) ) { //機種変更でルートへアクセスできなくなった。ディレクトリアクセスが厳しくなってるので処理追加。
+                        Toast.makeText( getApplicationContext(), "Permission Denied !!", Toast.LENGTH_LONG ).show();
+                    }
+                    else {
+                        showListOfDirectory( path );
+                    }
                 }
                 break;
-            case R.id.action_upRoot : //ルートへ
-                showListOfDirectory(ROOT_DIR);
-                break;
+//機種変更でルートアクセスが出来なくった。ディレクトリへのアクセスのPermissionが厳しくなって意味をなさない。
+//            case R.id.action_upRoot : //ルートへ
+//                showListOfDirectory(ROOT_DIR);
+//                break;
             case R.id.action_copy : //コピー
                 //コピー対象のファイルの情報を保存（実際のコピー処理はペーストされたタイミングで行う）
                 if ( setSelectedItemList() ) {
@@ -351,18 +455,41 @@ public class MainActivity extends AppCompatActivity {
             TextView textView = (TextView)findViewById(R.id.textView4);
             String path = textView.getText().toString();
             if (path.equals(FILE_SEPARATOR)) {
+                //
+                //※）2018.08.17
+                // 機種変更でOSバージョンアップしたためルートにアクセスできない。ディレクトリ変更時にRead出来るかチェックするので完成後はここに来ない（はず）。
+                //
+
                 //ダイアログで終了を確認する。
                 showAlertDialog(R.string.alertDlg_q_appEnd, MyDialogFragment.ALERT_DIALOG_OK_NG);
                 mAppEnd = true;
             } else {
                 //直上のディレクトリーのパス取得
                 String parentPath = getParentDirectoryName();
-                showListOfDirectory(parentPath);
+                if ( checkPremissionDenied( parentPath ) ) {
+                    Toast.makeText( getApplicationContext(), "Permission Denied !!", Toast.LENGTH_LONG ).show();
+                }
+                else {
+                    showListOfDirectory(parentPath);
+                }
             }
             return true;
         }
         Log.d( APPL_MAME, "onKeyDown() fin." );
         return super.onKeyDown( keyCode, event );
+    }
+
+    private boolean checkPremissionDenied( String path ) {
+        File checkedDirectory = new File( path );
+        if ( checkedDirectory == null ) {
+            //new 失敗だからpermission deniedにする
+            return true;
+        }
+        if ( !checkedDirectory.canRead() ) {
+            //リード不可のディレクトリだからpermission deniedにする
+            return true;
+        }
+        return false;
     }
 
     // ============================================================================================================

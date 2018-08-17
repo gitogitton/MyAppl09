@@ -41,11 +41,13 @@
         android:title="@string/menuItem_upFolder"
         android:orderInCategory="500"
         app:showAsAction="never" />
+<!--
     <item
         android:id="@+id/action_upRoot"
         android:title="@string/menuItem_upRoot"
         android:orderInCategory="600"
         app:showAsAction="never" />
+-->
     <item
         android:id="@+id/action_appEnd"
         android:title="@string/menuItem_appEnd"
