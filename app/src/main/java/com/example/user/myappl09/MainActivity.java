@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private final String APPL_MAME = "ファイル一覧";
     private final String FILE_SEPARATOR = System.getProperty("file.separator");
     private final String ROOT_DIR = FILE_SEPARATOR;
-    private final String INIT_DIR = "/sdcard";     //機種変更でアンドロイドのバージョンが上がった。で、権限強化で（？）ルートにアクセスできないので初期表示を変える。
+    private final String INIT_DIR = "/storage";     //機種変更でアンドロイドのバージョンが上がった。で、権限強化で（？）ルートにアクセスできないので初期表示を変える。
 
     //メニューの状態定義
     private final int MENU_NORMAL = 0;          //通常メニュー
@@ -103,16 +103,33 @@ public class MainActivity extends AppCompatActivity {
                         LineData item = (LineData)parent.getItemAtPosition(position);
                         if (item.isDirectory()) {
                             showListOfDirectory(item.getAbsolutePath());
-                        } else {
-                            //チェック状態を反転する。
-                            item.toggle();
-                            refreshList((ListView)findViewById(R.id.fileList01));
+//                        } else {
+//                            //チェック状態を反転する。
+//                            item.toggle();
+//                            refreshList((ListView)findViewById(R.id.fileList01));
                         }
-                        Log.d(APPL_MAME,"onItemClick() end.");
                     }
                 }
         );
+        //長押し
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(APPL_MAME,"onItemLongClick() start. [pos="+position+"/id="+id+"]");
 
+                //クリックされたのがフォルダの場合は何もしない。ファイルなら選択状態をトグルする。
+                LineData item = (LineData)parent.getItemAtPosition(position);
+                if (item.isDirectory()) {
+//                    showListOfDirectory(item.getAbsolutePath());
+                } else {
+                    //チェック状態を反転する。
+                    item.toggle();
+                    refreshList((ListView)findViewById(R.id.fileList01));
+                }
+
+                return true; //onItemClick()に飛ばさなくていいのでtrueで返す。
+            }
+        });
     } //onCreate()
 
     private void checkPermissions() {
