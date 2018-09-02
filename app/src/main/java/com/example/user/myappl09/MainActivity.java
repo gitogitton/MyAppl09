@@ -2,6 +2,8 @@ package com.example.user.myappl09;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -15,6 +17,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private final String FILE_SEPARATOR = System.getProperty("file.separator");
     private final String ROOT_DIR = FILE_SEPARATOR;
     private final String INIT_DIR = "/storage";     //機種変更でアンドロイドのバージョンが上がった。で、権限強化で（？）ルートにアクセスできないので初期表示を変える。
+    private final String INTERNAL_STORAGE = "/sdcard";  //なぜsdcardなる名前なのかわからない・・・
 
     //メニューの状態定義
     private final int MENU_NORMAL = 0;          //通常メニュー
@@ -107,6 +111,48 @@ public class MainActivity extends AppCompatActivity {
 //                            //チェック状態を反転する。
 //                            item.toggle();
 //                            refreshList((ListView)findViewById(R.id.fileList01));
+                        } else {
+                            //パス情報取得
+                            TextView textView = (TextView)findViewById( R.id.textView4 );
+                            String currentPath = textView.getText().toString();
+                            //フルパスファイル名
+                            String filePath = currentPath + "/" + item.getName();
+                            //拡張子 取り出し
+                            String extension = MimeTypeMap.getFileExtensionFromUrl( item.getName() );
+                            //Mime Type
+                            String mimetype =MimeTypeMap.getSingleton().getMimeTypeFromExtension( extension );
+                            Log.d( APPL_MAME, "externsion / mimetype = "+extension+" / "+mimetype );
+
+//この流れでは異常終了する。(パーミッション「READ_GMAIL」がいるとかなんとか・・・・)
+//                            String data = "content://" + filePath;
+//                            Uri uri = Uri.parse( data );
+//                            Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+//                            Log.d( APPL_MAME,"startActivity() Done !! ( "+intent.getDataString()+" )" );
+//                            if ( intent.resolveActivity( getPackageManager() ) != null ) {
+//                            startActivity( intent );
+//                            }
+
+// 上手くファイル名が渡ってないのか？
+// ファイルのオープンで失敗している。
+                            Intent intent = new Intent();
+                            intent.setAction( Intent.ACTION_VIEW );
+//                            String data = "content://" + filePath;
+                            String data = "content://" + filePath;
+                            intent.setDataAndType( Uri.parse( data ), mimetype );   //URLとmimetypeを設定
+//                            intent.putExtra( Intent.EXTRA_TEXT, intent.getDataString() );  //データを渡す
+//                            intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED ); //intentするアプリの起動の仕方を指定
+                            Log.d( APPL_MAME,"startActivityForResult() Done !! ( "+intent.getDataString()+" )" );
+                            if ( intent.resolveActivity( getPackageManager() ) != null ) {
+                                startActivity( intent );
+                            }
+
+
+//editor にファイルのパスを表示してみた。--> 答え）content:///storage/C09F-18F1/DocumenT/free_memo.txt
+//                            intent.setAction( Intent.ACTION_SEND );
+//                            //android 7くらいからパーミッションの強化でfile://でアクセスできなくなったみたい（？）
+//                            intent.setDataAndType( Uri.parse( "content://" + filePath ),"text/plain" ); // filePathはルートディレクトリからのパス(/mnt/sdcard/....)
+//                            intent.putExtra( Intent.EXTRA_TEXT, intent.getDataString() );
+//
                         }
                     }
                 }
@@ -131,6 +177,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     } //onCreate()
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+        Log.d( APPL_MAME, "onActivityResult() start." );
+        if ( requestCode == 1 ) {
+            Log.d( APPL_MAME, "onActivityResult() requestCode="+requestCode );
+        } else {
+            Log.d( APPL_MAME, "onActivityResult() requestCode is invalid ("+requestCode+")" );
+        }
+    }
 
     private void checkPermissions() {
         //Apiバージョン２３以上なら！！
@@ -262,7 +319,15 @@ public class MainActivity extends AppCompatActivity {
                 String path = getParentDirectoryName();
                 if(path.length()>0) {
                     if ( checkPremissionDenied( path ) ) { //機種変更でルートへアクセスできなくなった。ディレクトリアクセスが厳しくなってるので処理追加。
-                        Toast.makeText( getApplicationContext(), "Permission Denied !!", Toast.LENGTH_LONG ).show();
+//                        Toast.makeText( getApplicationContext(), "Permission Denied !!", Toast.LENGTH_LONG ).show();
+                        // カレントディレクトリが /storage , /sdcard であれば /sdcard , /storage へ移動する。（全体的に見直すのが面倒なので・・）
+                        TextView textView = (TextView)findViewById(R.id.textView4);
+                        String currentPath = textView.getText().toString();
+                        if ( currentPath.equals( INIT_DIR ) == true ) {
+                            showListOfDirectory( INTERNAL_STORAGE ); //内部ストレージトップを表示
+                        } else if ( currentPath.equals( INTERNAL_STORAGE ) == true ) {
+                            showListOfDirectory( INIT_DIR ); //外部ストレージトップを表示
+                        }
                     }
                     else {
                         showListOfDirectory( path );
@@ -484,7 +549,13 @@ public class MainActivity extends AppCompatActivity {
                 //直上のディレクトリーのパス取得
                 String parentPath = getParentDirectoryName();
                 if ( checkPremissionDenied( parentPath ) ) {
-                    Toast.makeText( getApplicationContext(), "Permission Denied !!", Toast.LENGTH_LONG ).show();
+//                    Toast.makeText( getApplicationContext(), "Permission Denied !!", Toast.LENGTH_LONG ).show();
+                    // カレントディレクトリが /storage , /sdcard であれば /sdcard , /storage へ移動する。（全体的に見直すのが面倒なので・・）
+                    if ( path.equals( INIT_DIR ) == true ) {
+                        showListOfDirectory( INTERNAL_STORAGE ); //内部ストレージトップを表示
+                    } else if ( path.equals( INTERNAL_STORAGE ) == true ) {
+                        showListOfDirectory( INIT_DIR ); //外部ストレージトップを表示
+                    }
                 }
                 else {
                     showListOfDirectory(parentPath);
