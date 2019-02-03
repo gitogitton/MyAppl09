@@ -1,12 +1,15 @@
 package com.example.user.myappl09;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -29,12 +32,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static android.os.Environment.DIRECTORY_DOCUMENTS;
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
 
 public class MainActivity extends AppCompatActivity {
@@ -107,52 +116,53 @@ public class MainActivity extends AppCompatActivity {
                         LineData item = (LineData)parent.getItemAtPosition(position);
                         if (item.isDirectory()) {
                             showListOfDirectory(item.getAbsolutePath());
-//                        } else {
-//                            //チェック状態を反転する。
-//                            item.toggle();
-//                            refreshList((ListView)findViewById(R.id.fileList01));
                         } else {
                             //パス情報取得
                             TextView textView = (TextView)findViewById( R.id.textView4 );
                             String currentPath = textView.getText().toString();
-                            //フルパスファイル名
+                            //フルパスファイル名編集
                             String filePath = currentPath + "/" + item.getName();
                             //拡張子 取り出し
-                            String extension = MimeTypeMap.getFileExtensionFromUrl( item.getName() );
+                            int extentionIndex = item.getName().lastIndexOf( "." );
+                            if( extentionIndex < 0 || extentionIndex > item.getName().length() ) {
+                                Toast.makeText( getApplicationContext(), "拡張子が取得できません。", Toast.LENGTH_LONG ).show();
+                            }
+                            String extension = item.getName().substring( extentionIndex+1 );
                             //Mime Type
                             String mimetype =MimeTypeMap.getSingleton().getMimeTypeFromExtension( extension );
                             Log.d( APPL_MAME, "externsion / mimetype = "+extension+" / "+mimetype );
+//===================
+                            File contentFilesDir = getApplicationContext().getFilesDir();
+                            File contentCacheDir = getApplicationContext().getCacheDir();
+                            File contextExternalDir = getApplicationContext().getExternalFilesDir(null);
+                            File contextExternalCacheDir = getApplicationContext().getExternalCacheDir();
 
-//この流れでは異常終了する。(パーミッション「READ_GMAIL」がいるとかなんとか・・・・)
-//                            String data = "content://" + filePath;
-//                            Uri uri = Uri.parse( data );
-//                            Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-//                            Log.d( APPL_MAME,"startActivity() Done !! ( "+intent.getDataString()+" )" );
-//                            if ( intent.resolveActivity( getPackageManager() ) != null ) {
-//                            startActivity( intent );
-//                            }
+                            File filesDir = getFilesDir();
+                            File cacheFilesDir = getCacheDir();
+                            File externalFilesDir = getExternalFilesDir( null );
+                            File externalCacheDir = getExternalCacheDir();
 
-// 上手くファイル名が渡ってないのか？
-// ファイルのオープンで失敗している。
-                            Intent intent = new Intent();
-                            intent.setAction( Intent.ACTION_VIEW );
-//                            String data = "content://" + filePath;
+                            File envFilesDir = Environment.getDataDirectory();
+                            File envExternalStrorageDir = Environment.getExternalStorageDirectory();
+//===================
                             String data = "content://" + filePath;
-                            intent.setDataAndType( Uri.parse( data ), mimetype );   //URLとmimetypeを設定
-//                            intent.putExtra( Intent.EXTRA_TEXT, intent.getDataString() );  //データを渡す
-//                            intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED ); //intentするアプリの起動の仕方を指定
-                            Log.d( APPL_MAME,"startActivityForResult() Done !! ( "+intent.getDataString()+" )" );
+
+                            Log.d( APPL_MAME, "getExternalStorageDirectory()="+Environment.getExternalStorageDirectory() );
+                            // cache dir
+                            File cacheDir = getCacheDir();
+                            String destPath = cacheDir.getPath() + "/" + item.getName();
+                            Uri uri = FileProvider.getUriForFile( getApplicationContext(),
+                                    "com.example.user.myappl09.myFileProvider", new File( destPath ) );
+                            Log.d( APPL_MAME, "uri = "+uri );
+
+                            Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+                            intent.setData( uri );
+
+                            intent.addFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION );
+                            Log.d( APPL_MAME,"startActivity() Done !! ( "+intent.getDataString()+" )" );
                             if ( intent.resolveActivity( getPackageManager() ) != null ) {
                                 startActivity( intent );
                             }
-
-
-//editor にファイルのパスを表示してみた。--> 答え）content:///storage/C09F-18F1/DocumenT/free_memo.txt
-//                            intent.setAction( Intent.ACTION_SEND );
-//                            //android 7くらいからパーミッションの強化でfile://でアクセスできなくなったみたい（？）
-//                            intent.setDataAndType( Uri.parse( "content://" + filePath ),"text/plain" ); // filePathはルートディレクトリからのパス(/mnt/sdcard/....)
-//                            intent.putExtra( Intent.EXTRA_TEXT, intent.getDataString() );
-//
                         }
                     }
                 }
@@ -323,9 +333,9 @@ public class MainActivity extends AppCompatActivity {
                         // カレントディレクトリが /storage , /sdcard であれば /sdcard , /storage へ移動する。（全体的に見直すのが面倒なので・・）
                         TextView textView = (TextView)findViewById(R.id.textView4);
                         String currentPath = textView.getText().toString();
-                        if ( currentPath.equals( INIT_DIR ) == true ) {
+                        if ( currentPath.equals( INIT_DIR ) ) {
                             showListOfDirectory( INTERNAL_STORAGE ); //内部ストレージトップを表示
-                        } else if ( currentPath.equals( INTERNAL_STORAGE ) == true ) {
+                        } else if ( currentPath.equals( INTERNAL_STORAGE ) ) {
                             showListOfDirectory( INIT_DIR ); //外部ストレージトップを表示
                         }
                     }
@@ -551,9 +561,9 @@ public class MainActivity extends AppCompatActivity {
                 if ( checkPremissionDenied( parentPath ) ) {
 //                    Toast.makeText( getApplicationContext(), "Permission Denied !!", Toast.LENGTH_LONG ).show();
                     // カレントディレクトリが /storage , /sdcard であれば /sdcard , /storage へ移動する。（全体的に見直すのが面倒なので・・）
-                    if ( path.equals( INIT_DIR ) == true ) {
+                    if ( path.equals( INIT_DIR ) ) {
                         showListOfDirectory( INTERNAL_STORAGE ); //内部ストレージトップを表示
-                    } else if ( path.equals( INTERNAL_STORAGE ) == true ) {
+                    } else if ( path.equals( INTERNAL_STORAGE ) ) {
                         showListOfDirectory( INIT_DIR ); //外部ストレージトップを表示
                     }
                 }
@@ -843,4 +853,40 @@ public class MainActivity extends AppCompatActivity {
         CustomAdapter adapter = (CustomAdapter) listView.getAdapter();
         adapter.notifyDataSetChanged();
     }
+
+    //引用）From：https://tech.nosuz.jp/2016/12/android-fast-file-copy/
+    private boolean copy(File src, File dst) {
+        boolean result = false;
+
+        FileInputStream inStream = null;
+        FileOutputStream outStream = null;
+
+        try {
+            inStream = new FileInputStream(src);
+            outStream = new FileOutputStream(dst);
+            FileChannel inChannel = inStream.getChannel();
+            FileChannel outChannel = outStream.getChannel();
+            long pos = 0;
+            while (pos < inChannel.size()) {
+                pos += inChannel.transferTo(pos, inChannel.size(), outChannel);
+            }
+            result = true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (inStream != null) inStream.close();
+                if (outStream != null) outStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if ((! result) && dst.exists()) dst.delete();
+
+        return result;
+    }
 }
+
