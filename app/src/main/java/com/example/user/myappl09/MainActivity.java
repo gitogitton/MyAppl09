@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -42,6 +43,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static android.os.Environment.DIRECTORY_DOCUMENTS;
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
@@ -122,45 +124,22 @@ public class MainActivity extends AppCompatActivity {
                             String currentPath = textView.getText().toString();
                             //フルパスファイル名編集
                             String filePath = currentPath + "/" + item.getName();
-                            //拡張子 取り出し
-                            int extentionIndex = item.getName().lastIndexOf( "." );
-                            if( extentionIndex < 0 || extentionIndex > item.getName().length() ) {
-                                Toast.makeText( getApplicationContext(), "拡張子が取得できません。", Toast.LENGTH_LONG ).show();
-                            }
-                            String extension = item.getName().substring( extentionIndex+1 );
-                            //Mime Type
-                            String mimetype =MimeTypeMap.getSingleton().getMimeTypeFromExtension( extension );
-                            Log.d( APPL_MAME, "externsion / mimetype = "+extension+" / "+mimetype );
-//===================
-                            File contentFilesDir = getApplicationContext().getFilesDir();
-                            File contentCacheDir = getApplicationContext().getCacheDir();
-                            File contextExternalDir = getApplicationContext().getExternalFilesDir(null);
-                            File contextExternalCacheDir = getApplicationContext().getExternalCacheDir();
-
-                            File filesDir = getFilesDir();
-                            File cacheFilesDir = getCacheDir();
-                            File externalFilesDir = getExternalFilesDir( null );
-                            File externalCacheDir = getExternalCacheDir();
-
-                            File envFilesDir = Environment.getDataDirectory();
-                            File envExternalStrorageDir = Environment.getExternalStorageDirectory();
-//===================
-                            String data = "content://" + filePath;
-
-                            Log.d( APPL_MAME, "getExternalStorageDirectory()="+Environment.getExternalStorageDirectory() );
-                            // cache dir
-                            File cacheDir = getCacheDir();
-                            String destPath = cacheDir.getPath() + "/" + item.getName();
-                            Uri uri = FileProvider.getUriForFile( getApplicationContext(),
-                                    "com.example.user.myappl09.myFileProvider", new File( destPath ) );
-                            Log.d( APPL_MAME, "uri = "+uri );
-
-                            Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-                            intent.setData( uri );
-
-                            intent.addFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION );
-                            Log.d( APPL_MAME,"startActivity() Done !! ( "+intent.getDataString()+" )" );
-                            if ( intent.resolveActivity( getPackageManager() ) != null ) {
+                            //暗黙的Intent
+                            Intent intent = new Intent( Intent.ACTION_VIEW );
+                            File file = new File( filePath );
+                            Uri uri = FileProvider.getUriForFile( MainActivity.this,
+                                    getApplicationContext().getPackageName() + ".provider",
+                                    file );
+                            String contentType = getContentResolver().getType( uri );
+                            intent.setDataAndType( uri, contentType );
+                            intent.addFlags( Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                    | Intent.FLAG_GRANT_READ_URI_PERMISSION );
+                            PackageManager packageManager = getPackageManager();
+                            List activities = packageManager.queryIntentActivities( intent,
+                                    PackageManager.MATCH_DEFAULT_ONLY );
+                            boolean isIntentSafe = activities.size() > 0;
+                            if( isIntentSafe )
+                            {
                                 startActivity( intent );
                             }
                         }
