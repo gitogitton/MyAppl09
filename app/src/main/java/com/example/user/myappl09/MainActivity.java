@@ -195,11 +195,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-//        Log.d( APPL_MAME, "onRequestPermissionsResult() start. reqCode="+requestCode+
-//                " Permission="+permissions[0]+" Results="+grantResults[0] );
-
         if ( requestCode == MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE) {
             if ( ( grantResults.length >= 2 ) &&
                     ( grantResults[0] == PermissionChecker.PERMISSION_GRANTED &&
@@ -208,7 +203,6 @@ public class MainActivity extends AppCompatActivity {
                 showListOfDirectory( INIT_DIR );
             }
         }
-
     }
 
     private void reqPermissions() {
